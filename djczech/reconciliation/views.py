@@ -1,45 +1,67 @@
 from django.conf import settings
 from django.template import RequestContext
 from django.http import HttpResponseRedirect
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404
 
-from djczech.reconciliation.forms import MyForm
+from djczech.reconciliation.forms import ChequeDataForm
 from djtools.utils.mail import send_mail
+from djzbar.utils.informix import do_sql as do_esql
 
-def check_detail(request,cid):
-    if settings.DEBUG:
-        TO_LIST = [settings.SERVER_EMAIL,]
-    else:
-        TO_LIST = [settings.MY_APP_EMAIL,]
-    BCC = settings.MANAGERS
+import csv
 
+def cheque_data(request):
+    """
+    Form that allows the user to upload bank data in CSV format
+    and then inserts the data into the database
+    """
     if request.method=='POST':
-        form = MyForm(request.POST, request.FILES)
+        form = ChequeDataForm(request.POST, request.FILES)
         if form.is_valid():
-            data = form.save()
-            email = settings.DEFAULT_FROM_EMAIL
-            if data.email:
-                email = data.email
-            subject = "[Submit] {} {}".format(data.first_name,data.last_name)
-            send_mail(
-                request,TO_LIST, subject, email,"reconciliation/email.html",
-                data, BCC
+            bank_data = form.cleaned_data['bank_data']
+
+            # munge the data
+            fieldnames = (
+                "jbimprt_date", "jbchkno", "jbstatus_date", "jbstatus",
+                "jbaction", "jbaccount", "jbamount", "jbissue_date",
+                "jbpostd_dat", "jbpayee", "jbseqno"
             )
+            reader = csv.DictReader( bank_data, fieldnames )
+            jason = json.dumps( [ row for row in reader ] )
+
+            # insert the data
             return HttpResponseRedirect(
-                reverse_lazy("check_success")
+                reverse("cheque_data_success")
             )
     else:
-        form = MyForm()
+        form = ChequeDataForm()
     return render_to_response(
-        "reconciliation/form.html",
+        "reconciliation/cheque/data_form.html",
         {"form": form,},
         context_instance=RequestContext(request)
     )
 
-def search(request):
+
+def cheque_list(request):
+    sql = """
+        SELECT
+            *
+        FROM
+            ccreconjb_rec
+        ORDER_BY
+            jbissue_date
+    """
+    cheques = do_esql(sql)
     return render_to_response(
-        "reconciliation/search.html",
+        "reconciliation/cheque/list.html",
+        {"cheques": cheques,},
+        context_instance=RequestContext(request)
+    )
+
+
+def cheque_search(request):
+    return render_to_response(
+        "reconciliation/cheque/search.html",
         context_instance=RequestContext(request)
     )
 

@@ -6,19 +6,23 @@ from django.views.generic import TemplateView
 admin.autodiscover()
 
 urlpatterns = patterns('djczech.reconciliation.views',
+    #url(
+    #    r'^cheque/(?P<cid>\d+)/$',
+    #    'cheque_detail', name="cheque_detail"
+    #),
     url(
-        r'^check/(?P<cid>\d+)/$',
-        'check_detail', name="check_detail"
+        r'^cheque/data/$',
+        'cheque_data', name="cheque_data"
     ),
     url(
-        r'^check/search/$',
-        'check_search', name="check_search"
+        r'^cheque/search/$',
+        'cheque_search', name="cheque_search"
     ),
     url(
-        r'^check/success/$',
+        r'^cheque/success/$',
         TemplateView.as_view(
-            template_name='reconciliation/success.html'
+            template_name='reconciliation/cheque/success.html'
         ),
-        name='check_success'
+        name='cheque_success'
     ),
 )
