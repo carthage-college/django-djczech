@@ -1,11 +1,13 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Float
 
+import datetime
+
 Base = declarative_base()
 
 def _get_date():
-    #return datetime.datetime.now()
-    return str(datetime.datetime.now().strftime("%Y-%m-%d"))
+    return datetime.datetime.now()
+    #return datetime.datetime.now().strftime("%Y-%m-%d")
 
 class Cheque(Base):
     __tablename__ = 'ccreconjb_rec'

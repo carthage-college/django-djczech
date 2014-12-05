@@ -3,12 +3,15 @@ from django.template import RequestContext
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
+from django.contrib.admin.views.decorators import staff_member_required
 
 from djczech.reconciliation.data.models import Cheque
 from djczech.reconciliation.forms import ChequeDataForm
 
 from djzbar.utils.informix import do_sql as do_esql
 from djzbar.settings import INFORMIX_EARL
+
+from datetime import datetime
 
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
@@ -17,6 +20,7 @@ from sqlalchemy import text
 import csv
 
 
+@staff_member_required
 def cheque_data(request):
     """
     Form that allows the user to upload bank data in CSV format
@@ -25,30 +29,57 @@ def cheque_data(request):
     if request.method=='POST':
         form = ChequeDataForm(request.POST, request.FILES)
         if form.is_valid():
-            # the CSV file
-            bank_data = form.cleaned_data['bank_data']
             # database connection
-            engine = create_engine(INFORMIX_EARL_PROD)
+            engine = create_engine(INFORMIX_EARL)
             Session = sessionmaker(bind=engine)
             session = Session()
-            # munge the data
+            # remove old objects for now
+            session.query(Cheque).delete()
+            session.commit()
+            # munge the data from CSV file
+            bank_data = form.cleaned_data['bank_data']
             fieldnames = (
-                "jbaccount","jbchkno","Null","jbamount","jbissue_date",
+                "jbaccount","jbchkno","jbaction","jbamount","jbissue_date",
                 "jbpostd_dat","jbstatus","jbstatus_date","jbpayee"
             )
             reader = csv.DictReader(bank_data, fieldnames)
+            seq = 1
+            fmt = "%m/%d/%Y"
             for r in reader:
+                try:
+                    jbissue_date = datetime.strptime(r["jbissue_date"], fmt)
+                except:
+                    jbissue_date = ""
+
+                try:
+                    jbstatus_date = datetime.strptime(r["jbstatus_date"], fmt)
+                except:
+                    jbstatus_date = ""
+
+                try:
+                    jbamount = float(r["jbamount"][1:])
+                except:
+                    jbamount = 0
+
+                jbaction = r["jbaction"]
+                if r["jbstatus"] == "Stale" or r["jbstatus"] == "Void":
+                    jbaction = "X"
+
                 cheque = Cheque(
                     jbchkno=r["jbchkno"],
-                    jbstatus_date=r["jbstatus_date"], jbstatus=r["jbstatus"],
-                    jbaction=r["jbaction"], jbaccount=r["jbaccount"],
-                    jbamount=r["jbamount"], jbissue_date=r["jbissue_date"],
+                    jbstatus_date=jbstatus_date, jbstatus=r["jbstatus"],
+                    jbaction=jbaction, jbaccount=r["jbaccount"],
+                    jbamount=jbamount, jbissue_date=jbissue_date,
                     jbpostd_dat=r["jbpostd_dat"], jbpayee=r["jbpayee"],
-                    jbseqno=r["jbseqno"]
+                    jbseqno=seq
                 )
+                seq += 1
 
                 # insert the data
                 session.add(cheque)
+
+            session.commit()
+            session.close()
 
             return HttpResponseRedirect(
                 reverse("cheque_data_success")
@@ -62,6 +93,7 @@ def cheque_data(request):
     )
 
 
+@staff_member_required
 def cheque_list(request):
     sql = """
         SELECT
@@ -82,9 +114,18 @@ def cheque_list(request):
     )
 
 
+@staff_member_required
 def cheque_search(request):
+    # database connection
+    engine = create_engine(INFORMIX_EARL)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    cid = request.POST.get("cid")
+    cheque = session.query(Cheque).filter_by(jbchkno=cid).first()
+
     return render_to_response(
-        "reconciliation/cheque/search.html",
+        "dashboard/cheque/search.html",
+        {"cheque":cheque,},
         context_instance=RequestContext(request)
     )
 

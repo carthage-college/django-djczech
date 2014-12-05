@@ -27,6 +27,6 @@ urlpatterns = patterns('djczech.reconciliation.views',
         TemplateView.as_view(
             template_name='reconciliation/cheque/success.html'
         ),
-        name='cheque_success'
+        name='cheque_data_success'
     ),
 )
