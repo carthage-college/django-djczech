@@ -6,10 +6,10 @@ from django.views.generic import TemplateView
 admin.autodiscover()
 
 urlpatterns = patterns('djczech.reconciliation.views',
-    #url(
-    #    r'^cheque/(?P<cid>\d+)/$',
-    #    'cheque_detail', name="cheque_detail"
-    #),
+    url(
+        r'^cheque/(?P<cid>\d+)/detail/$',
+        'cheque_detail', name="cheque_detail"
+    ),
     url(
         r'^cheque/data/$',
         'cheque_data', name="cheque_data"
@@ -20,7 +20,7 @@ urlpatterns = patterns('djczech.reconciliation.views',
     ),
     url(
         r'^cheque/search/$',
-        'cheque_search', name="cheque_search"
+        'cheque_detail', name="cheque_search"
     ),
     url(
         r'^cheque/success/$',

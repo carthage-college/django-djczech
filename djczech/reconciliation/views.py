@@ -95,9 +95,9 @@ def cheque_data(request):
 
 @staff_member_required
 def cheque_list(request):
+    #        first 1000
     sql = """
         SELECT
-            first 1000
             *
         FROM
             ccreconjb_rec
@@ -115,12 +115,20 @@ def cheque_list(request):
 
 
 @staff_member_required
-def cheque_search(request):
+def cheque_detail(request, cid=None):
+    if not cid:
+        # search POST
+        try:
+            cid = request.POST["cid"]
+        except:
+            return HttpResponseRedirect(
+                reverse("cheque_list")
+            )
+
     # database connection
     engine = create_engine(INFORMIX_EARL)
     Session = sessionmaker(bind=engine)
     session = Session()
-    cid = request.POST.get("cid")
     cheque = session.query(Cheque).filter_by(jbchkno=cid).first()
 
     return render_to_response(

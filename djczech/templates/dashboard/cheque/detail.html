@@ -1,0 +1,42 @@
+{% extends "dashboard/base.html" %}
+{% block extra_javascript %}{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">
+                Data Information
+            </h1>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                Cheque Number: 
+                </div>
+                <!-- /.panel-heading -->
+                <div class="panel-body" id="cheques-data-panel">
+                    <pre>
+                        jbchkno = {{cheque.jbchkno}}
+                        jbimprt_date = {{cheque.jbimprt_date}}
+                        jbstatus = {{cheque.jbstatus}}
+                        jbstatus_date = {{cheque.jbstatus_date}}
+                        jbaction = {{cheque.jbaction}}
+                        jbaccount = {{cheque.jbaccount}}
+                        jbamount = {{cheque.jbamount}}
+                        jbissue_date = {{cheque.jbissue_date}}
+                        jbpostd_dat = {{cheque.jbpostd_dat}}
+                        jbpayee = {{cheque.jbpayee}}
+                        jbseqno = {{cheque.jbseqno}}
+                    </pre>
+                </div>
+                <!-- /.panel-body -->
+            </div>
+            <!-- /.panel -->
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+{% endblock content %}

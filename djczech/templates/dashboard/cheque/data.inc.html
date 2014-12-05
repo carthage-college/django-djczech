@@ -19,7 +19,9 @@
         {% for c in cheques %}
             <tr>
                 <td class="" style="text-align:left;">
+                    <a href="{% url 'cheque_detail' c.jbchkno %}">
                     {{c.jbchkno}}
+                    </a>
                 </td>
                 <td class="">
                     {{c.jbstatus}}
