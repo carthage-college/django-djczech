@@ -15,6 +15,10 @@ urlpatterns = patterns('djczech.reconciliation.views',
         'cheque_data', name="cheque_data"
     ),
     url(
+        r'^cheque/list/$',
+        'cheque_list', name="cheque_list"
+    ),
+    url(
         r'^cheque/search/$',
         'cheque_search', name="cheque_search"
     ),

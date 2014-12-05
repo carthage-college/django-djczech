@@ -5,7 +5,7 @@ import os, sys
 sys.path.append('/usr/lib/python2.7/dist-packages/')
 sys.path.append('/usr/lib/python2.7/')
 sys.path.append('/usr/local/lib/python2.7/dist-packages/')
-sys.path.append('/data2/django_current/')
+sys.path.append('/data2/django_1.7/')
 sys.path.append('/data2/django_projects/')
 sys.path.append('/data2/django_third/')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djczech.settings")
@@ -15,25 +15,37 @@ from django.conf import settings
 from optparse import OptionParser
 
 """
-Shell script...
+Shell script that munges CSV data
 """
+
+import csv
 
 # set up command-line options
 desc = """
-Accepts as input...
+Accepts as input a file name
 """
 
 parser = OptionParser(description=desc)
 parser.add_option(
-    "-x", "--equis",
-    help="Lorem ipsum dolor sit amet.",
-    dest="equis"
+    "-f", "--file",
+    help="File name.",
+    dest="file"
 )
 
 def main():
     """
-    main method
+    main function
     """
+
+    csvfile = open(phile, 'r')
+    fieldnames = (
+        "jbaccount","jbchkno","Null","jbamount","jbissue_date",
+        "jbpostd_dat","jbstatus","jbstatus_date","jbpayee"
+    )
+
+    reader = csv.DictReader( csvfile, fieldnames)
+    for r in reader:
+        print r["jbchkno"]
 
 ######################
 # shell command line
@@ -41,9 +53,9 @@ def main():
 
 if __name__ == "__main__":
     (options, args) = parser.parse_args()
-    equis = options.equis
+    phile = options.file
 
-    mandatories = ['equis',]
+    mandatories = ['file',]
     for m in mandatories:
         if not options.__dict__[m]:
             print "mandatory option is missing: %s\n" % m

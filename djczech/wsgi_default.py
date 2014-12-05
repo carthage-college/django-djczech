@@ -2,7 +2,7 @@ import os, sys
 # python
 sys.path.append('/usr/lib/python2.7/')
 sys.path.append('/usr/lib/python2.7/dist-packages/')
-sys.path.append('/data2/django_current/')
+sys.path.append('/data2/django_1.7/')
 sys.path.append('/data2/django_projects/')
 sys.path.append('/data2/django_third/')
 # django

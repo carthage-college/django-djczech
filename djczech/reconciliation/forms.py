@@ -2,7 +2,7 @@
 
 from django import forms
 
-class MyForm(forms.Form):
+class ChequeDataForm(forms.Form):
 
     bank_data = forms.FileField(
         max_length="768"
