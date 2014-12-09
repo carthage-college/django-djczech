@@ -9,7 +9,6 @@ from sqlalchemy import text
 
 sql = """
     SELECT
-        first 1000
         *
     FROM
         ccreconjb_rec
@@ -17,30 +16,46 @@ sql = """
         jbissue_date
 """
 
-"""
 objs = do_esql(sql)
 for o in objs:
-    print o.jbchkno, o.jbimprt_date
-"""
+    #print o.jbchkno, o.jbimprt_date
+    print o
 
+"""
 engine = create_engine(INFORMIX_EARL)
-Session = sessionmaker(bind=engine)
-session = Session()
+session = sessionmaker(bind=engine, autocommit = True)()
+"""
 
 #session.query(Cheque).delete()
 #session.commit()
 
-cid = 172207
-cheque = session.query(Cheque).filter_by(jbchkno=cid).first()
+#cid = 172207
+#cheque = session.query(Cheque).filter_by(jbchkno=cid).first()
 
-print cheque
+#print cheque
 
-#sql = "SELECT jbchkno, jbissue_date, status FROM users where jbaction=:action"
-#objs = session.query("jbchkno", "jbissue_date", "status").\
-#        from_statement(text(sql)).\
-#        params(action='X').all()
-#for o in objs:
-#    print o.jbchkno, o.jbissue_date, o.status
+'''
+sql = """
+    SELECT
+        jbaction, jbchkno, jbissue_date, jbstatus
+    FROM
+        ccreconjb_rec where jbaction=:jbaction
+    """
+
+objs = session.query("jbaction", "jbchkno", "jbissue_date", "jbstatus").\
+        from_statement(text(sql)).\
+        params(jbaction='X').all()
+for o in objs:
+    print o.jbaction, o.jbchkno, o.jbissue_date, o.jbstatus
+    #print o
+'''
+
+"""
+# does the same as do_sql() function
+objs = session.execute(sql)
+for o in objs:
+    print o
+"""
 
 """
 seq = 1
@@ -48,4 +63,4 @@ for instance in session.query(Cheque):
     print seq, instance.jbchkno
     seq += 1
 """
-session.close()
+#session.close()

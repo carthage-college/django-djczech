@@ -7,7 +7,6 @@ Base = declarative_base()
 
 def _get_date():
     return datetime.datetime.now()
-    #return datetime.datetime.now().strftime("%Y-%m-%d")
 
 class Cheque(Base):
     __tablename__ = 'ccreconjb_rec'
@@ -27,4 +26,3 @@ class Cheque(Base):
     def __repr__(self):
         return str(self.jbchkno)
 
-#http://turbogears.org/2.1/docs/main/SQLAlchemy.html
