@@ -95,18 +95,14 @@ def cheque_data(request):
 
 @staff_member_required
 def cheque_list(request):
-    #        first 1000
-    sql = """
-        SELECT
-            *
-        FROM
-            ccreconjb_rec
-        ORDER BY
-            jbissue_date
-    """
-    cheques = do_esql(
-        sql, key=settings.INFORMIX_DEBUG, earl=settings.INFORMIX_EARL
-    )
+    # database connection
+    engine = create_engine(INFORMIX_EARL)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    # query
+    cheques = session.query(Cheque).all()
+    session.close()
+
     return render_to_response(
         "dashboard/cheque/list.html",
         {"cheques": cheques,},
@@ -129,7 +125,8 @@ def cheque_detail(request, cid=None):
     engine = create_engine(INFORMIX_EARL)
     Session = sessionmaker(bind=engine)
     session = Session()
-    cheque = session.query(Cheque).filter_by(jbchkno=cid).first()
+    cheque = session.query(Cheque).get(cid)
+    session.close()
 
     return render_to_response(
         "dashboard/cheque/search.html",
