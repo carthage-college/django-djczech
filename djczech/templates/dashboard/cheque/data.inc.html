@@ -3,6 +3,23 @@
         <thead>
             <tr>
                 <th>Check #</th>
+                <th id="jbstatus">Status</th>
+                <th>Status Date</th>
+                <th>Import Date</th>
+                <th id="jbaction">Action</th>
+                <th>Account</th>
+                <th>Amount</th>
+                <th>Issued</th>
+                <th>Posted</th>
+                <th>Payee</th>
+                <th>Sequence #</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>Check #</th>
                 <th>Status</th>
                 <th>Status Date</th>
                 <th>Import Date</th>
@@ -14,48 +31,7 @@
                 <th>Payee</th>
                 <th>Sequence #</th>
             </tr>
-        </thead>
-        <tbody>
-        {% for c in cheques %}
-            <tr>
-                <td class="" style="text-align:left;">
-                    <a href="{% url 'cheque_detail' c.jbchkno %}">
-                    {{c.jbchkno}}
-                    </a>
-                </td>
-                <td class="">
-                    {{c.jbstatus}}
-                </td>
-                <td class="">
-                    {{c.jbstatus_date}}
-                </td>
-                <td class="">
-                    {{c.jbimprt_date}}
-                </td>
-                <td class="">
-                    {{c.jbaction}}
-                </td>
-                <td class="">
-                    {{c.jbaccount}}
-                </td>
-                <td class="">
-                    {{c.jbamount}}
-                </td>
-                <td class="">
-                    {{c.jbissue_date}}
-                </td>
-                <td class="">
-                    {{c.jbpostd_dat}}
-                </td>
-                <td class="">
-                    {{c.jbpayee}}
-                </td>
-                <td class="">
-                    {{c.jbseqno}}
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
+        </tfoot>
     </table>
 </div>
 <!-- /.table-responsive -->
