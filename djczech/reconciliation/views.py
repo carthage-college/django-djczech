@@ -1,24 +1,27 @@
 from django.conf import settings
 from django.template import RequestContext
-from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.admin.views.decorators import staff_member_required
 
 from djczech.reconciliation.data.models import Cheque
 from djczech.reconciliation.forms import ChequeDataForm
 
-from djzbar.utils.informix import do_sql as do_esql
-from djzbar.settings import INFORMIX_EARL
-
-from datetime import datetime
-
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from sqlalchemy import text
+from sqlalchemy import desc
+from datatables import DataTable
+from datetime import date, datetime
 
 import csv
+import logging
+logger = logging.getLogger(__name__)
 
+EARL = settings.INFORMIX_EARL
+STATUS="I"
+if settings.DEBUG:
+    STATUS="EYE"
 
 @staff_member_required
 def cheque_data(request):
@@ -30,50 +33,49 @@ def cheque_data(request):
         form = ChequeDataForm(request.POST, request.FILES)
         if form.is_valid():
             # database connection
-            engine = create_engine(INFORMIX_EARL)
+            engine = create_engine(EARL)
             Session = sessionmaker(bind=engine)
             session = Session()
-            # remove old objects for now
-            session.query(Cheque).delete()
-            session.commit()
             # munge the data from CSV file
             bank_data = form.cleaned_data['bank_data']
-            fieldnames = (
-                "jbaccount","jbchkno","jbaction","jbamount","jbissue_date",
-                "jbpostd_dat","jbstatus","jbstatus_date","jbpayee"
+            # convert date to datetime
+            import_date = datetime.combine(
+                form.cleaned_data['import_date'], datetime.min.time()
             )
+            # for some reason we set jbpayee equal to the import date
+            # plus user info
+            jbpayee = "{}_{}".format(
+                form.cleaned_data['import_date'], request.user.username
+            )
+            # CSV headers
+            fieldnames = (
+                "jbstatus_date", "jbstatus", "jbamount",
+                "jbaccount", "jbchkno", "jbpayee"
+            )
+            # read the CSV file
             reader = csv.DictReader(bank_data, fieldnames)
-            seq = 1
-            fmt = "%m/%d/%Y"
             for r in reader:
-                try:
-                    jbissue_date = datetime.strptime(r["jbissue_date"], fmt)
-                except:
-                    jbissue_date = ""
-
-                try:
-                    jbstatus_date = datetime.strptime(r["jbstatus_date"], fmt)
-                except:
-                    jbstatus_date = ""
-
+                # convert amount from string to float and strip dollar sign
                 try:
                     jbamount = float(r["jbamount"][1:])
                 except:
                     jbamount = 0
-
-                jbaction = r["jbaction"]
-                if r["jbstatus"] == "Stale" or r["jbstatus"] == "Void":
-                    jbaction = "X"
+                # status date
+                try:
+                    jbstatus_date = datetime.strptime(
+                        r["jbstatus_date"], "%m/%d/%Y"
+                    )
+                except:
+                    jbstatus_date = None
 
                 cheque = Cheque(
-                    jbchkno=r["jbchkno"],
-                    jbstatus_date=jbstatus_date, jbstatus=r["jbstatus"],
-                    jbaction=jbaction, jbaccount=r["jbaccount"],
-                    jbamount=jbamount, jbissue_date=jbissue_date,
-                    jbpostd_dat=r["jbpostd_dat"], jbpayee=r["jbpayee"],
-                    jbseqno=seq
+                    jbimprt_date=import_date,
+                    jbstatus_date=jbstatus_date,
+                    jbchkno=int(r["jbchkno"]), jbchknolnk=int(r["jbchkno"]),
+                    jbstatus=STATUS, jbaction="", jbaccount=r["jbaccount"],
+                    jbamount=jbamount, jbamountlnk=jbamount,
+                    jbpayee=jbpayee
                 )
-                seq += 1
 
                 # insert the data
                 session.add(cheque)
@@ -88,24 +90,64 @@ def cheque_data(request):
         form = ChequeDataForm()
     return render_to_response(
         "reconciliation/cheque/data_form.html",
-        {"form": form,},
+        {"form": form,"earl":EARL},
         context_instance=RequestContext(request)
     )
 
+@staff_member_required
+def cheque_search(request):
+    # database connection
+    engine = create_engine(EARL)
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
 @staff_member_required
-def cheque_list(request):
+def cheque_ajax(request):
     # database connection
-    engine = create_engine(INFORMIX_EARL)
+    engine = create_engine(EARL)
     Session = sessionmaker(bind=engine)
     session = Session()
     # query
-    cheques = session.query(Cheque).all()
-    session.close()
+    #cheques = session.query(Cheque).order_by(desc(jbissue_date)).limit(length)
+    #cheques = session.query(Cheque).order_by(desc(Cheque.jbissue_date))
+    cheques = session.query(Cheque)
+    # datatable
+    table = DataTable(request.GET, Cheque, cheques, [
+        "jbchkno",
+        "jbimprt_date",
+        "jbstatus",
+        "jbstatus_date",
+        "jbaction",
+        "jbaccount",
+        "jbamount",
+        "jbissue_date",
+        "jbpostd_dat",
+        "jbpayee",
+        "jbseqno"
+    ])
 
+    table.add_data(link=lambda o: reverse("cheque_detail", args=[o.jbchkno]))
+    table.add_data(pk=lambda o: o.jbchkno)
+    #table.searchable(lambda queryset, user_input: cheque_search(queryset, user_input))
+
+    session.close()
+    return JsonResponse(table.json())
+
+@staff_member_required
+def cheque_list(request):
+    '''
+    # database connection
+    engine = create_engine(EARL)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    # query
+    cheques = session.query(Cheque).order_by(desc(jbissue_date)).limit(100)
+    session.close()
+    '''
+
+    #{"cheques": cheques,},
     return render_to_response(
         "dashboard/cheque/list.html",
-        {"cheques": cheques,},
         context_instance=RequestContext(request)
     )
 
@@ -122,7 +164,7 @@ def cheque_detail(request, cid=None):
             )
 
     # database connection
-    engine = create_engine(INFORMIX_EARL)
+    engine = create_engine(EARL)
     Session = sessionmaker(bind=engine)
     session = Session()
     cheque = session.query(Cheque).get(cid)
