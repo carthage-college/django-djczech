@@ -11,6 +11,10 @@ urlpatterns = patterns('djczech.reconciliation.views',
         'cheque_detail', name="cheque_detail"
     ),
     url(
+        r'^cheque/ajax/$',
+        'cheque_ajax', name="cheque_ajax"
+    ),
+    url(
         r'^cheque/data/$',
         'cheque_data', name="cheque_data"
     ),
