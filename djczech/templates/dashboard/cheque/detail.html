@@ -1,10 +1,29 @@
 {% extends "dashboard/base.html" %}
-{% block extra_javascript %}{% endblock %}
+{% block extra_javascript %}
+<script>
+    $(function() {
+        /* xeditable jquery plugin */
+        $.fn.editable.defaults.mode = 'inline';
+        $('.xeditable').editable({
+            url: "{% url 'set_val' %}",
+            emptytext: "Click to edit",
+            params: function (params) {
+                params.model = $(this).attr("data-model");
+                params.pk = $(this).attr("data-pk");
+                return params
+            },
+            success: function(response, newValue) {
+                $.growlUI('Success', "Data saved.");
+            }
+        });
+    });
+</script>
+{% endblock %}
 {% block content %}
     <div class="row">
         <div class="col-lg-12">
             <h1 class="page-header">
-                Data Information
+                Detailed Information
             </h1>
         </div>
         <!-- /.col-lg-12 -->
@@ -14,23 +33,32 @@
         <div class="col-lg-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                Cheque Number: 
+                Cheque Number: {{cheque.jbchkno|default:"&nbsp;"}}
                 </div>
                 <!-- /.panel-heading -->
                 <div class="panel-body" id="cheques-data-panel">
-                    <pre>
-                        jbchkno = {{cheque.jbchkno}}
-                        jbimprt_date = {{cheque.jbimprt_date}}
-                        jbstatus = {{cheque.jbstatus}}
-                        jbstatus_date = {{cheque.jbstatus_date}}
-                        jbaction = {{cheque.jbaction}}
-                        jbaccount = {{cheque.jbaccount}}
-                        jbamount = {{cheque.jbamount}}
-                        jbissue_date = {{cheque.jbissue_date}}
-                        jbpostd_dat = {{cheque.jbpostd_dat}}
-                        jbpayee = {{cheque.jbpayee}}
-                        jbseqno = {{cheque.jbseqno}}
-                    </pre>
+                    <dl class="dl-horizontal">
+                        <dt> Status </dt>
+                        <dd> {{cheque.jbstatus|default:"&nbsp;"}} </dd>
+                        <dt> Status date </dt>
+                        <dd> {{cheque.jbstatus_date|default:"&nbsp;"}} </dd>
+                        <dt> Import date </dt>
+                        <dd> {{cheque.jbimprt_date|default:"&nbsp;"}} </dd>
+                        <dt> Action </dt>
+                        <dd> {{cheque.jbaction|default:"&nbsp;"}} </dd>
+                        <dt> Account </dt>
+                        <dd> {{cheque.jbaccount|default:"&nbsp;"}} </dd>
+                        <dt> Amount </dt>
+                        <dd> {{cheque.jbamount|default:"&nbsp;"}} </dd>
+                        <dt> Issue date </dt>
+                        <dd> {{cheque.jbissue_date|default:"&nbsp;"}} </dd>
+                        <dt> Posted date </dt>
+                        <dd> {{cheque.jbpostd_dat|default:"&nbsp;"}} </dd>
+                        <dt> Payee </dt>
+                        <dd> {{cheque.jbpayee|default:"&nbsp;"}} </dd>
+                        <dt> Sequence number </dt>
+                        <dd> {{cheque.jbseqno|default:"&nbsp;"}} </dd>
+                    </dl>
                 </div>
                 <!-- /.panel-body -->
             </div>
