@@ -5,6 +5,7 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView, TemplateView
 
 from djauth.views import loggedout
+from djtools.views.dashboard import responsive_switch
 
 admin.autodiscover()
 
@@ -45,6 +46,10 @@ urlpatterns = patterns('',
         TemplateView.as_view(
             template_name="reconciliation/success.html"
         )
+    ),
+    # ajax post method to save various types characteristics to db and session
+    url(
+        r'^set-val/$', 'djczech.core.views.set_val', name="set_val"
     ),
     # override mobile first responsive UI
     url(
