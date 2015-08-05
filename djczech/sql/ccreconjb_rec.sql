@@ -1,14 +1,5 @@
 SELECT
-    jbimprt_date,
-    jbchkno,
-    jbstatus_date,
-    jbstatus,
-    jbaction,
-    jbaccount,
-    jbamount,
-    jbissue_date,
-    jbpostd_dat,
-    jbpayee,
-    jbseqno
+    *
 FROM
-    cars:ccreconjb_rec;
+    train:ccreconjb_rec
+ORDER BY jbseqno DESC LIMIT 10
