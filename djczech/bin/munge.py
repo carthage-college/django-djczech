@@ -12,7 +12,13 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djczech.settings")
 
 from django.conf import settings
 
-from optparse import OptionParser
+from djczech.reconciliation.data.models import Cheque
+from djzbar.utils.informix import get_session
+from djtools.fields import TODAY
+
+from datetime import date, datetime
+
+import argparse
 
 """
 Shell script that munges CSV data
@@ -20,16 +26,29 @@ Shell script that munges CSV data
 
 import csv
 
+STATUS="I"
+if settings.DEBUG:
+    STATUS="EYE"
+
+EARL = settings.INFORMIX_EARL
+
 # set up command-line options
 desc = """
-Accepts as input a file name
+Accepts as input a CSV file
 """
 
-parser = OptionParser(description=desc)
-parser.add_option(
+parser = argparse.ArgumentParser(description=desc)
+
+parser.add_argument(
     "-f", "--file",
     help="File name.",
-    dest="file"
+    dest="phile"
+)
+parser.add_argument(
+    "--test",
+    action='store_true',
+    help="Dry run?",
+    dest="test"
 )
 
 def main():
@@ -37,29 +56,79 @@ def main():
     main function
     """
 
-    csvfile = open(phile, 'r')
-    fieldnames = (
-        "jbaccount","jbchkno","Null","jbamount","jbissue_date",
-        "jbpostd_dat","jbstatus","jbstatus_date","jbpayee"
+    # convert date to datetime
+    import_date = datetime.combine(
+        TODAY, datetime.min.time()
     )
+    # for some reason we set jbpayee equal to the import date
+    # plus user info
+    jbpayee = "{}_{}".format(
+        TODAY, settings.ADMINS[0][0]
+    )
+    # CSV headers
+    fieldnames = (
+        "jbstatus_date", "jbstatus", "jbamount",
+        "jbaccount", "jbchkno", "jbpayee"
+    )
+    csvfile = open(phile, 'r')
+    # read the CSV file
+    reader = csv.DictReader(csvfile, fieldnames)
 
-    reader = csv.DictReader( csvfile, fieldnames)
+    # create database session
+    print EARL
+    session = get_session(EARL)
+
     for r in reader:
-        print r["jbchkno"]
+        # convert amount from string to float and strip dollar sign
+        try:
+            jbamount = float(r["jbamount"][1:])
+        except:
+            jbamount = 0
+        # status date
+        try:
+            jbstatus_date = datetime.strptime(
+                r["jbstatus_date"], "%m/%d/%Y"
+            )
+        except:
+            jbstatus_date = None
+        # create a Cheque object
+        cheque = Cheque(
+            jbimprt_date=import_date,
+            jbstatus_date=jbstatus_date,
+            jbchkno=int(r["jbchkno"]), jbchknolnk=int(r["jbchkno"]),
+            jbstatus=STATUS, jbaction="", jbaccount=r["jbaccount"],
+            jbamount=jbamount, jbamountlnk=jbamount,
+            jbpayee=jbpayee
+        )
+
+        if test:
+            print cheque.__dict__
+        else:
+            try:
+                # insert the data
+                session.add(cheque)
+            except exc.SQLAlchemyError as e:
+                print e
+                print "Bad data: {}".format(cheque.__dict__)
+                pass
+
+    if not test:
+        session.commit()
+    session.close()
+
 
 ######################
 # shell command line
 ######################
 
 if __name__ == "__main__":
-    (options, args) = parser.parse_args()
-    phile = options.file
+    args = parser.parse_args()
+    phile = args.phile
+    test = args.test
 
-    mandatories = ['file',]
-    for m in mandatories:
-        if not options.__dict__[m]:
-            print "mandatory option is missing: %s\n" % m
-            parser.print_help()
-            exit(-1)
-
+    if not phile:
+        print "mandatory option is missing: file name\n"
+        parser.print_help()
+        exit(-1)
     sys.exit(main())
+
