@@ -17,6 +17,7 @@ from djzbar.utils.informix import get_session
 from djtools.fields import TODAY
 
 from datetime import date, datetime
+from itertools import islice
 
 import argparse
 
@@ -70,9 +71,20 @@ def main():
         "jbstatus_date", "jbstatus", "jbamount",
         "jbaccount", "jbchkno", "jbpayee"
     )
-    csvfile = open(phile, 'r')
-    # read the CSV file
-    reader = csv.DictReader(csvfile, fieldnames)
+
+    # remove all lines up to and including the headers line
+    with open(phile, "r") as f:
+        '''Pass preamble'''
+        n = 0
+        for line in f.readlines():
+            n += 1
+            if 'As of date' in line: # line in which field names was found
+                break
+        f.close()
+        f = islice(open(phile, "r"), n, None)
+
+        # read the CSV file
+        reader = csv.DictReader(f, fieldnames, delimiter='\t')
 
     # create database session
     print EARL
@@ -81,7 +93,7 @@ def main():
     for r in reader:
         # convert amount from string to float and strip dollar sign
         try:
-            jbamount = float(r["jbamount"][1:])
+            jbamount = float(r["jbamount"][1:].replace(',',''))
         except:
             jbamount = 0
         # status date
@@ -100,6 +112,7 @@ def main():
             jbamount=jbamount, jbamountlnk=jbamount,
             jbpayee=jbpayee
         )
+        # missing fields: jbissue_date, jbpostd_dat
 
         if test:
             print cheque.__dict__
@@ -114,6 +127,8 @@ def main():
 
     if not test:
         session.commit()
+
+    # fin
     session.close()
 
 
