@@ -12,16 +12,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djczech.settings")
 
 from django.conf import settings
 
-# sql statements
-from djczech.reconciliation import SELECT_VOID_A, SELECT_VOID_B
-from djczech.reconciliation import SET_STATUS, SET_STATUS_TEST
-from djczech.reconciliation import SET_RECONCILIATION_STATUS
-from djczech.reconciliation import TMP_VOID_A, TMP_VOID_B
-from djczech.reconciliation import UPDATE_STATUS, SELECT_RECORDS_FOR_UPDATE
+from djczech.reconciliation.sql import *
 
-from djczech.reconciliation.data.models import Cheque
 from djzbar.utils.informix import get_session
-
 from djtools.fields import TODAY
 
 from datetime import date, datetime
@@ -75,25 +68,27 @@ def main():
 
     # Populate void temp table A
     voida = session.execute(TMP_VOID_A)
-    #print "void a status: {}".format(voida.__dict__)
+    print "void a status: {}".format(voida.__dict__)
 
     # Populate void temp table B
     voidb = session.execute(TMP_VOID_B)
-    #print "void b status: {}".format(voidb.__dict__)
+    print "void b status: {}".format(voidb.__dict__)
 
-    if settings.DEBUG:
-        print "select tmp_voida"
-        objs = session.execute(SELECT_VOID_A)
-        for o in objs:
-            print o.__dict__
-
-    # select * from temp table A and send the data to the business office
-    objs = session.execute(SELECT_VOID_B)
-
+    # TEST voida temp table
+    # remove later
+    objs = session.execute(SELECT_VOID_A)
+    print "select tmp_voida"
     for o in objs:
         print o.__dict__
 
-    # Find the DUP CheckNos and update as 's'uspicious
+    # select * from temp table B and send the data to the business office
+    objs = session.execute(SELECT_VOID_B)
+
+    # TEST: print voidb data
+    for o in objs:
+        print o.__dict__
+
+    # Find the duplicate check numbers and update as 's'uspicious
 
     # first, drop the temp tables, just in case
     try:
@@ -112,6 +107,8 @@ def main():
     except:
         print "no temp table: tmp_4updtstatus"
 
+    # obtain the import date in a very weird manner
+    # we don't need this chapuza.
     sql = """
         SELECT
             Min(ccreconjb_rec.jbimprt_date) AS crrntbatchdate
@@ -125,6 +122,8 @@ def main():
     """.format(import_date)
 
     max_batch_date = session.execute(sql)
+
+    # select the duplicates
     sql = """
         SELECT
             ccreconjb_rec.jbchkno, tmp_maxbtchdate.crrntbatchdate,
@@ -180,10 +179,6 @@ def main():
 
     # send duplicate records to the business office
 
-    # Find the cleared CheckNos and set:
-    #   gltr_rec as 'r'econciled
-    # and:
-    #   ccreconjb_rec as 'ar' (auto-reconciled)
 
     try:
         session.execute("DROP TABLE tmp_reconupdta")
@@ -191,106 +186,25 @@ def main():
     except:
         print "no temp table: tmp_reconupdta"
 
+    # Find the cleared Check Numbers
     sql = """
-        SELECT
-            ccreconjb_rec.jbimprt_date, ccreconjb_rec.jbseqno,
-            ccreconjb_rec.jbchkno, ccreconjb_rec.jbchk_reconupdtanolnk,
-            ccreconjb_rec.jbstatus, ccreconjb_rec.jbaction,
-            ccreconjb_rec.jbamount, ccreconjb_rec.jbamountlnk,
-            ccreconjb_rec.jbaccount, ccreconjb_rec.jbstatus_date,
-            ccreconjb_rec.jbpayee, gltr_rec.gltr_no, gle_rec.jrnl_ref,
-            gle_rec.jrnl_no, gle_rec.doc_id cknodoc_id, gltr_rec.amt,
-            gle_rec.doc_no cknodoc_no, gltr_rec.subs, gltr_rec.stat,
-            gltr_rec.recon_stat
-        FROM
-            vch_rec, gle_rec, gltr_rec, ccreconjb_rec
-        WHERE
-            gle_rec.jrnl_ref = 'CK'
-        AND
-            vch_rec.amt_type = 'ACT'
-        AND
-            gle_rec.ctgry = 'CHK'
-        AND
-            gle_rec.jrnl_ref = vch_rec.vch_ref
-        AND
-            gle_rec.jrnl_no = vch_rec.jrnl_no
-        AND
-            gle_rec.jrnl_ref = gltr_rec.jrnl_ref
-        AND
-            gle_rec.jrnl_no = gltr_rec.jrnl_no
-        AND
-            gle_rec.gle_no = gltr_rec.ent_no
-        AND
-            gltr_rec.stat IN('P','xV')
         AND
             ccreconjb_rec.jbimprt_date >= '{}'
-        AND
-            ccreconjb_rec.jbchknolnk = gle_rec.doc_no
-        AND
-            ccreconjb_rec.jbamountlnk = gltr_rec.amt
-        AND
-            ccreconjb_rec.jbstatus NOT IN("s","ar","er","mr")
-        AND
-            gltr_rec.recon_stat NOT IN("r","v")
         ORDER BY
             gle_rec.doc_no
         INTO TEMP
             tmp_reconupdta
         WITH NO LOG
-    """.format(import_date)
+    """.format(SELECT_CLEARED_CHEQUES, import_date)
 
     select_reconciled = session.execute(sql)
-
-    sql = """
-        UPDATE
-            gltr_rec
-        SET
-            gltr_rec.recon_stat = 'r'
-        WHERE
-            gltr_rec.gltr_no
-        IN  (
-                SELECT
-                    tmp_reconupdta.gltr_no
-                FROM
-                    tmp_reconupdta
-            )
-        AND
-            gltr_rec.recon_stat = 'O'
-    """
-
-    update_reconciled = session.execute(sql)
-
-    sql = """
-        UPDATE
-            ccreconjb_rec
-        SET
-            ccreconjb_rec.jbstatus = 'ar'
-        WHERE
-            ccreconjb_rec.jbseqno
-        IN  (
-                SELECT
-                    tmp_reconupdta.jbseqno
-                FROM
-                    tmp_reconupdta
-            )
-        AND
-            ccreconjb_rec.jbstatus = 'I'
-    """
-
-    update_status = session.execute(sql)
+    # set gltr_rec as 'r'econciled
+    update_reconciled = session.execute(UPDATE_RECONCILED)
+    # set ccreconjb_rec as 'ar' (auto-reconciled)
+    update_status = session.execute(UPDATE_STATUS)
 
     # send the results to business office
-
-    sql = """
-        SELECT
-            *
-        FROM
-            tmp_reconupdta
-        ORDER BY
-            tmp_reconupdta.cknodoc_no
-    """
-
-    objs = session.execute(sql)
+    objs = session.execute(SELECT_RECONCILIATED)
 
     session.close()
 
