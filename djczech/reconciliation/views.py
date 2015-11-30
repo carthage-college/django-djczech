@@ -7,6 +7,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 from djczech.reconciliation.data.models import Cheque
 from djczech.reconciliation.forms import ChequeDataForm
+from djczech.reconciliation.utils import recce_cheques
 
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
@@ -19,9 +20,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 EARL = settings.INFORMIX_EARL
-STATUS="I"
-if settings.DEBUG:
-    STATUS="EYE"
 
 @staff_member_required
 def cheque_data(request):
@@ -29,6 +27,9 @@ def cheque_data(request):
     Form that allows the user to upload bank data in CSV format
     and then inserts the data into the database
     """
+    # lists for recording results
+    cheques = []
+    fail = []
     if request.method=='POST':
         form = ChequeDataForm(request.POST, request.FILES)
         if form.is_valid():
@@ -36,8 +37,8 @@ def cheque_data(request):
             engine = create_engine(EARL)
             Session = sessionmaker(bind=engine)
             session = Session()
-            # munge the data from CSV file
-            bank_data = form.cleaned_data['bank_data']
+            # obtain the CSV file from POST
+            phile = request.FILES['bank_data'].read()
             # convert date to datetime
             import_date = datetime.combine(
                 form.cleaned_data['import_date'], datetime.min.time()
@@ -52,12 +53,25 @@ def cheque_data(request):
                 "jbstatus_date", "jbstatus", "jbamount",
                 "jbaccount", "jbchkno", "jbpayee"
             )
-            # read the CSV file
-            reader = csv.DictReader(bank_data, fieldnames)
+
+            # remove all lines up to and including the headers line
+            with open(phile, "r") as f:
+                n = 0
+                for line in f.readlines():
+                    n += 1
+                    if 'As of date' in line: # line in which field names live
+                        break
+                f.close()
+                f = islice(open(phile, "r"), n, None)
+
+                # read the CSV file
+                reader = csv.DictReader(f, fieldnames, delimiter='\t')
+
+            # for each line create a Cheque object
             for r in reader:
                 # convert amount from string to float and strip dollar sign
                 try:
-                    jbamount = float(r["jbamount"][1:])
+                    jbamount = float(r["jbamount"][1:].replace(',',''))
                 except:
                     jbamount = 0
                 # status date
@@ -67,20 +81,33 @@ def cheque_data(request):
                     )
                 except:
                     jbstatus_date = None
+                # check number
+                try:
+                    cheque_number = int(r["jbchkno"])
+                except:
+                    cheque_number = 0
 
+                # create a Cheque object
                 cheque = Cheque(
                     jbimprt_date=import_date,
                     jbstatus_date=jbstatus_date,
-                    jbchkno=int(r["jbchkno"]), jbchknolnk=int(r["jbchkno"]),
-                    jbstatus=STATUS, jbaction="", jbaccount=r["jbaccount"],
-                    jbamount=jbamount, jbamountlnk=jbamount,
-                    jbpayee=jbpayee
+                    jbchkno=cheque_number, jbchknolnk=cheque_number,
+                    jbstatus=settings.IMPORT_STATUS, jbaction="",
+                    jbaccount=r["jbaccount"], jbamount=jbamount,
+                    jbamountlnk=jbamount, jbpayee=jbpayee
                 )
 
-                # insert the data
-                session.add(cheque)
+                try:
+                    # insert the data
+                    session.add(cheque)
+                    cheques.append(cheque)
+                except exc.SQLAlchemyError as e:
+                    fail.append(cheque.__dict__)
 
             session.commit()
+            # execute the reconciliation process
+            #recce_cheques(request, session, import_date)
+            # done
             session.close()
 
             return HttpResponseRedirect(
@@ -90,7 +117,7 @@ def cheque_data(request):
         form = ChequeDataForm()
     return render_to_response(
         "reconciliation/cheque/data_form.html",
-        {"form": form,"earl":EARL},
+        {"form":form,"earl":EARL,"fail":fail,"cheques":cheques},
         context_instance=RequestContext(request)
     )
 
