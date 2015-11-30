@@ -48,25 +48,6 @@
         });
     </script>
 {% endblock %}
-{% block extra_style %}
-<link href="//www.carthage.edu/static/vendor/jquery/ui/datepicker/css/smoothness/jquery-ui-1.10.4.custom.min.css"
-    rel="stylesheet" type="text/css" />
-<style type="text/css" media="screen, projection">
-li.ctrlHolder div ul li {display:inline; padding-right:3px;}
-</style>
-{% endblock %}
-{% block group_name %}Business Office{% endblock %}
-{% block left_nav %}
-    {% include "left_nav.html" %}
-{% endblock %}
-{% block sidebar %}
-    {% include "side_bar.html" %}
-{% endblock %}
-{% block content_head %}
-    <h1 id="page_title">
-        DJ Czech
-    </h1>
-{% endblock %}
 {% block content %}
 <div class="forms-container large-8 medium-10 small-12">
     {% include "includes/generic_form_multi.html" %}
@@ -76,6 +57,5 @@ li.ctrlHolder div ul li {display:inline; padding-right:3px;}
     <h2>Earl</h2>
     {{earl}}
     {% endif %}
-    {% include "reconciliation/cheque/help_text.html" %}
 </div>
 {% endblock %}
