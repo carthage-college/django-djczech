@@ -27,10 +27,6 @@ Shell script that munges CSV data
 
 import csv
 
-STATUS="I"
-if settings.DEBUG:
-    STATUS="EYE"
-
 EARL = settings.INFORMIX_EARL
 
 # set up command-line options
@@ -74,7 +70,6 @@ def main():
 
     # remove all lines up to and including the headers line
     with open(phile, "r") as f:
-        '''Pass preamble'''
         n = 0
         for line in f.readlines():
             n += 1
@@ -87,9 +82,13 @@ def main():
         reader = csv.DictReader(f, fieldnames, delimiter='\t')
 
     # create database session
-    print EARL
+    if test:
+        print EARL
+        print settings.IMPORT_STATUS
+
     session = get_session(EARL)
 
+    x = 1
     for r in reader:
         # convert amount from string to float and strip dollar sign
         try:
@@ -103,19 +102,25 @@ def main():
             )
         except:
             jbstatus_date = None
+        # check number
+        try:
+            cheque_number = int(r["jbchkno"])
+        except:
+            cheque_number = 0
+
         # create a Cheque object
         cheque = Cheque(
             jbimprt_date=import_date,
             jbstatus_date=jbstatus_date,
-            jbchkno=int(r["jbchkno"]), jbchknolnk=int(r["jbchkno"]),
-            jbstatus=STATUS, jbaction="", jbaccount=r["jbaccount"],
-            jbamount=jbamount, jbamountlnk=jbamount,
-            jbpayee=jbpayee
+            jbchkno=cheque_number, jbchknolnk=cheque_number,
+            jbstatus=settings.IMPORT_STATUS, jbaction="",
+            jbaccount=r["jbaccount"], jbamount=jbamount,
+            jbamountlnk=jbamount, jbpayee=jbpayee
         )
         # missing fields: jbissue_date, jbpostd_dat
 
         if test:
-            print cheque.__dict__
+            print "{}) {}".format(x, cheque.__dict__)
         else:
             try:
                 # insert the data
@@ -124,6 +129,7 @@ def main():
                 print e
                 print "Bad data: {}".format(cheque.__dict__)
                 pass
+        x += 1
 
     if not test:
         session.commit()
