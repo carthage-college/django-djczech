@@ -56,6 +56,18 @@
     {% if django_debug %}
     <h2>Earl</h2>
     {{earl}}
+    <h2>Fail</h2>
+    <ol>
+    {% for f in fail %}
+        <li>{{f}}</li>
+    {% endfor %}
+    </ol>
+    <h2>Cheques</h2>
+    <ol>
+    {% for c in cheques %}
+        <li>{{c.jbchkno}}</li>
+    {% endfor %}
+    </ol>
     {% endif %}
 </div>
 {% endblock %}
