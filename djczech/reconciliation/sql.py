@@ -7,9 +7,9 @@ STATUS=settings.IMPORT_STATUS
 # Populate temporary table A
 TMP_VOID_A = """
     SELECT
-        gltr_rec.gltr_no gltr_noa, gle_rec.jrnl_ref, gle_rec.doc_id,
-        cknodoc_ida, gle_rec.doc_no cknodoc_noa, gltr_rec.subs, gltr_rec.stat,
-        gltr_rec.recon_stat
+        gltr_rec.gltr_no as gltr_noa, gle_rec.jrnl_ref, gle_rec.doc_id,
+        cknodoc_ida, gle_rec.doc_no as cknodoc_noa, gltr_rec.subs,
+        gltr_rec.stat, gltr_rec.recon_stat
     FROM
         vch_rec, gle_rec, gltr_rec
     WHERE
@@ -89,34 +89,14 @@ SELECT_VOID_B = """
         cknodoc_nob, gltr_nob
 """
 
-# 4) Update reconciliation status to 'r' with test clause
-UPDATE_RECONCILIATION_STATUS_TEST = """
-    UPDATE
-        gltr_rec
-    SET
-        gltr_rec.recon_stat = 'r'
-    WHERE
-        gltr_rec.gltr_no
-    IN  (
-            SELECT
-                tmp_voidb.gltr_nob
-            FROM
-                tmp_voidb
-            WHERE
-                tmp_voidb.gltr_nob = 1869496
-        )
-    AND
-        gltr_rec.gltr_no = 1869496
-    AND
-        gltr_rec.recon_stat = 'O'
-"""
-
-# Set reconciliation status to 'r'
+# Set reconciliation status to 'v'
+#requi_status = "v"
+requi_status = "V"
 UPDATE_RECONCILIATION_STATUS = """
     UPDATE
         gltr_rec
     SET
-        gltr_rec.recon_stat = 'r'
+        gltr_rec.recon_stat = '{}'
     WHERE
         gltr_rec.gltr_no
     IN  (
@@ -127,12 +107,11 @@ UPDATE_RECONCILIATION_STATUS = """
         )
     AND
         gltr_rec.recon_stat = 'O'
-"""
+""".format(requi_status)
 
 # 5) Find the duplicate check numbers and update those as 's'uspicious
 
 # select import_date and stick it in a temp table, for some reason
-# (we don't need this chapuza).
 SELECT_CURRENT_BATCH_DATE = """
     SELECT
         Min(ccreconjb_rec.jbimprt_date) AS crrntbatchdate
