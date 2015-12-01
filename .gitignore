@@ -33,6 +33,7 @@ nosetests.xml
 .project
 .pydevproject
 
+*.csv
 *.log
 *.pot
 *.swp
