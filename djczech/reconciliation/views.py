@@ -7,16 +7,20 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 from djczech.reconciliation.data.models import Cheque
 from djczech.reconciliation.forms import ChequeDataForm
-from djczech.reconciliation.utils import recce_cheques
+from djczech.reconciliation.utils import handle_uploaded_file, recce_cheques
 
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy import desc
 from datatables import DataTable
 from datetime import date, datetime
+from itertools import islice
 
+import os
 import csv
 import logging
+import tempfile
+
 logger = logging.getLogger(__name__)
 
 EARL = settings.INFORMIX_EARL
@@ -37,8 +41,6 @@ def cheque_data(request):
             engine = create_engine(EARL)
             Session = sessionmaker(bind=engine)
             session = Session()
-            # obtain the CSV file from POST
-            phile = request.FILES['bank_data'].read()
             # convert date to datetime
             import_date = datetime.combine(
                 form.cleaned_data['import_date'], datetime.min.time()
@@ -53,19 +55,20 @@ def cheque_data(request):
                 "jbstatus_date", "jbstatus", "jbamount",
                 "jbaccount", "jbchkno", "jbpayee"
             )
-
+            # obtain the CSV file from POST and upload
+            phile = handle_uploaded_file(request.FILES['bank_data'])
             # remove all lines up to and including the headers line
             with open(phile, "r") as f:
                 n = 0
                 for line in f.readlines():
                     n += 1
-                    if 'As of date' in line: # line in which field names live
+                    if 'As of date' in line: # line in which field headers live
                         break
                 f.close()
                 f = islice(open(phile, "r"), n, None)
 
-                # read the CSV file
-                reader = csv.DictReader(f, fieldnames, delimiter='\t')
+            # read the CSV file
+            reader = csv.DictReader(f, fieldnames, delimiter='\t')
 
             # for each line create a Cheque object
             for r in reader:
@@ -100,19 +103,27 @@ def cheque_data(request):
                 try:
                     # insert the data
                     session.add(cheque)
-                    cheques.append(cheque)
+                    session.flush()
+                    cheques.append(cheque.__dict__)
                 except exc.SQLAlchemyError as e:
                     fail.append(cheque.__dict__)
-
+                    session.rollback()
             session.commit()
             # execute the reconciliation process
             #recce_cheques(request, session, import_date)
             # done
             session.close()
 
-            return HttpResponseRedirect(
-                reverse("cheque_data_success")
-            )
+            if settings.DEBUG:
+                return render_to_response(
+                    "reconciliation/cheque/data_form.html",
+                    {"form":form,"earl":EARL,"fail":fail,"cheques":cheques},
+                    context_instance=RequestContext(request)
+                )
+            else:
+                return HttpResponseRedirect(
+                    reverse("cheque_data_success")
+                )
     else:
         form = ChequeDataForm()
     return render_to_response(
@@ -162,19 +173,19 @@ def cheque_ajax(request):
 
 @staff_member_required
 def cheque_list(request):
-    '''
     # database connection
     engine = create_engine(EARL)
     Session = sessionmaker(bind=engine)
     session = Session()
     # query
-    cheques = session.query(Cheque).order_by(desc(jbissue_date)).limit(100)
+    cheques = session.query(Cheque).filter_by(jbstatus=settings.IMPORT_STATUS)
+    #.order_by(desc(jbissue_date))
+    #.limit(100)
     session.close()
-    '''
 
-    #{"cheques": cheques,},
     return render_to_response(
         "dashboard/cheque/list.html",
+        {"cheques": cheques},
         context_instance=RequestContext(request)
     )
 
