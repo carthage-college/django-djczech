@@ -188,8 +188,8 @@ INTO TEMP
     tmp_4updtstatus
 WITH NO LOG;
 
-/* TEST */
-/* RON: send the results to business office? */
+/* select the records for update. send_mail() in the view */
+/* SELECT_RECORDS_FOR_UPDATE */
 SELECT
     *
 FROM
@@ -394,7 +394,11 @@ ORDER BY
     tmp_reconupdta.cknodoc_no;
 
 /* TEST */
-SELECT * FROM ccreconjb_rec WHERE jbstatus = 'EYE'
-SELECT * FROM ccreconjb_rec WHERE jbstatus = 'ARR'
+SELECT * FROM ccreconjb_rec WHERE jbstatus = 'EYE';
+SELECT * FROM ccreconjb_rec WHERE jbstatus = 'ARR';
+
+/* reset */
+DELETE ccreconjb_rec WHERE jbstatus = 'EYE';
+DELETE ccreconjb_rec WHERE jbstatus = 'ARR';
 
 /* Fin */
