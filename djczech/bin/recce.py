@@ -15,9 +15,8 @@ from django.conf import settings
 from djczech.reconciliation.sql import *
 
 from djzbar.utils.informix import get_session
-from djtools.fields import TODAY
 
-from datetime import date, datetime
+from datetime import datetime
 
 import argparse
 
@@ -35,6 +34,11 @@ Optional --test argument
 parser = argparse.ArgumentParser(description=desc)
 
 parser.add_argument(
+    "-d", "--date",
+    help="Import date format: 1891-05-01",
+    dest="date"
+)
+parser.add_argument(
     "--test",
     action='store_true',
     help="Dry run?",
@@ -46,168 +50,319 @@ def main():
     main function
     """
 
+    # start time
+    print datetime.now()
+
     # convert date to datetime
-    import_date = datetime.combine(
-        TODAY, datetime.min.time()
-    )
+    #import_date = datetime.strptime(date, "%Y-%m-%d").date()
+    import_date = datetime.strptime(date, "%Y-%m-%d")
+    print "import_date = {}".format(import_date)
 
     # create database connection
-    print EARL
     session = get_session(EARL)
-    # drop temp tables, just in case
+    print "database connection URL = {}".format(EARL)
+
+    #...........................................
+    print "drop temp tables, just in case"
+    sql = "DROP TABLE tmp_voida"
+    print sql
+    if not test:
+        try:
+            session.execute(sql)
+            print "tmp_voida dropped"
+        except:
+            print "no temp table: tmp_voida"
+
+    #...........................................
+    sql = "DROP TABLE tmp_voidb"
+    print sql
+    if not test:
+        try:
+            session.execute(sql)
+            print "tmp_voidb dropped"
+        except:
+            print "no temp table: tmp_voidb"
+
+    #...........................................
+    print "Populate tmp_voida temp table"
+    print "TMP_VOID_A sql:"
+    sql = TMP_VOID_A
+    if not test:
+        x = session.execute(sql)
+        print x.context.statement
+    else:
+        print sql
+
+    #...........................................
+    print "TEST: select * from tmp_voida table and print"
+    print "SELECT_VOID_A sql:"
+    sql = SELECT_VOID_A
+    print sql
+    if not test:
+        objs = session.execute(sql)
+        for o in objs:
+            print o
+
+    #...........................................
+    print "Populate tmp_voidb temp table"
+    print "TMP_VOID_B sql:"
+    sql = TMP_VOID_B
+    if not test:
+        x = session.execute(sql)
+        print x.context.statement
+    else:
+        print sql
+
+    #...........................................
+    print "select * from tmp_voidb. print here / send_mail() in the view"
+    print "SELECT_VOID_B sql:"
+    sql = SELECT_VOID_B
+    print sql
+    if not test:
+        objs = session.execute(sql)
+        for o in objs:
+            print o
+
+    #...........................................
+    print "set reconciliation status to 'v'"
+    print "UPDATE_RECONCILIATION_STATUS sql:"
+    sql = UPDATE_RECONCILIATION_STATUS
+    if not test:
+        x = session.execute(sql)
+        print x.context.statement
+    else:
+        print sql
+
+    print "Find the duplicate check numbers and update as 's'uspicious"
+
+    #...........................................
+    print "TEST sql:"
+    sql = "SELECT * FROM gltr_rec WHERE recon_stat = '{}'".format(
+        settings.REQUI_VICH
+    )
+    print sql
+    if not test:
+        objs = session.execute(sql)
+        for o in objs:
+            print o
+
+    #...........................................
+    print "first, drop the temp tables, just in case. sql:"
+    sql = "DROP TABLE tmp_maxbtchdate"
+    print sql
+    if not test:
+        try:
+            session.execute(sql)
+            print "tmp_maxbtchdate dropped"
+        except:
+            print "no temp table: tmp_maxbtchdate"
+
+    #...........................................
+    sql = "DROP TABLE tmp_DupCkNos"
+    print sql
+    if not test:
+        try:
+            session.execute(sql)
+            print "tmp_DupCkNos dropped"
+        except:
+            print "no temp table: tmp_DupCkNos"
+
+    #...........................................
+    sql = "DROP TABLE tmp_4updtstatus"
+    print sql
+    #if not test:
     try:
-        session.execute("DROP TABLE tmp_voida")
-        print "tmp_voida dropped"
-    except:
-        print "no temp table: tmp_voida"
-    try:
-        session.execute("DROP TABLE tmp_voidb")
-        print "tmp_voidb dropped"
-    except:
-        print "no temp table: tmp_voidb"
-
-    # Populate void temp table A
-    voida = session.execute(TMP_VOID_A)
-    print "void a status: {}".format(voida.__dict__)
-
-    # Populate void temp table B
-    voidb = session.execute(TMP_VOID_B)
-    print "void b status: {}".format(voidb.__dict__)
-
-    # TEST voida temp table
-    # remove later
-    objs = session.execute(SELECT_VOID_A)
-    print "select tmp_voida"
-    for o in objs:
-        print o.__dict__
-
-    # select * from temp table B and send the data to the business office
-    objs = session.execute(SELECT_VOID_B)
-
-    # TEST: print voidb data
-    for o in objs:
-        print o.__dict__
-
-    # Find the duplicate check numbers and update as 's'uspicious
-
-    # first, drop the temp tables, just in case
-    try:
-        session.execute("DROP TABLE tmp_maxbtchdate")
-        print "tmp_maxbtchdate dropped"
-    except:
-        print "no temp table: tmp_maxbtchdate"
-    try:
-        session.execute("DROP TABLE tmp_DupCkNos")
-        print "tmp_DupCkNos dropped"
-    except:
-        print "no temp table: tmp_DupCkNos"
-    try:
-        session.execute("DROP TABLE tmp_4updtstatus")
+        session.execute(sql)
         print "tmp_4updtstatus dropped"
     except:
         print "no temp table: tmp_4updtstatus"
 
-    # obtain the import date in a very weird manner
-    # we don't need this chapuza.
-    sql = """
-        SELECT
-            Min(ccreconjb_rec.jbimprt_date) AS crrntbatchdate
-        FROM
-            ccreconjb_rec
-        WHERE
-            jbimprt_date >= '{}'
-        INTO TEMP
-            tmp_maxbtchdate
-        WITH NO LOG
-    """.format(import_date)
+    #...........................................
+    print "select import_date and stick it in a temp table, for some reason"
+    print "SELECT_CURRENT_BATCH_DATE sql:"
+    sql = SELECT_CURRENT_BATCH_DATE(import_date=import_date)
+    if not test:
+        x = session.execute(sql)
+        print x.context.statement
+    else:
+        print sql
 
-    max_batch_date = session.execute(sql)
+    #...........................................
+    print "TEST: display batch date. sql:"
+    sql = "SELECT * FROM tmp_maxbtchdate"
+    print sql
+    if not test:
+        obj = session.execute(sql)
+        print obj.fetchone().crrntbatchdate
 
-    # select the duplicates
-    sql = """
-        SELECT
-            ccreconjb_rec.jbchkno, tmp_maxbtchdate.crrntbatchdate,
-            Max(ccreconjb_rec.jbimprt_date) AS maxbatchdate,
-            Min(ccreconjb_rec.jbimprt_date) AS minbatchdate,
-            Count(ccreconjb_rec.jbseqno) AS countofjbseqno
-        FROM
-            ccreconjb_rec, tmp_maxbtchdate
-        WHERE
-            ccreconjb_rec.jbimprt_date >= '{}'
-        GROUP BY
-            ccreconjb_rec.jbchkno, tmp_maxbtchdate.crrntbatchdate
-        HAVING
-            Count(ccreconjb_rec.jbseqno) > 1
-        INTO TEMP
-            tmp_dupcknos
-        WITH NO LOG
-    """.format(import_date)
+    #...........................................
+    print "Select the duplicate cheques"
+    print "SELECT_DUPLICATES_1 sql:"
+    sql = SELECT_DUPLICATES_1(import_date=import_date)
+    if not test:
+        x = session.execute(sql)
+        print x.context.statement
+    else:
+        print sql
 
-    duplicate_check_numbers = session.execute(sql)
+    #...........................................
+    print "TEST: print selected duplicate cheques. sql:"
+    sql = "SELECT * FROM tmp_dupcknos"
+    print sql
+    if not test:
+        objs = session.execute(sql)
+        for o in objs:
+            print o
 
-    sql = """
-        SELECT
-            ccreconjb_rec.jbseqno, ccreconjb_rec.jbchkno,
-            ccreconjb_rec.jbchknolnk, ccreconjb_rec.jbimprt_date,
-            ccreconjb_rec.jbstatus, ccreconjb_rec.jbaction,
-            ccreconjb_rec.jbaccount, ccreconjb_rec.jbamount,
-            ccreconjb_rec.jbamountlnk, ccreconjb_rec.jbstatus_date,
-            tmp_dupcknos.crrntbatchdate, tmp_dupcknos.maxbatchdate,
-            tmp_dupcknos.minbatchdate, tmp_dupcknos.countofjbseqno
-        FROM
-            ccreconjb_rec, tmp_dupcknos
-        WHERE
-            ccreconjb_rec.jbimprt_date >= '{}'
-        AND
-            ccreconjb_rec.jbchkno = tmp_dupcknos.jbchkno
-        AND
-            ccreconjb_rec.jbstatus = 'I'
-        ORDER BY
-            ccreconjb_rec.jbchkno, ccreconjb_rec.jbseqno
-        INTO TEMP
-            tmp_4updtstatus
-        WITH NO LOG
-    """.format(import_date)
+    #...........................................
+    print "Select for updating"
+    print "SELECT_FOR_UPDATING sql:"
+    sql = SELECT_FOR_UPDATING(
+        import_date=import_date,
+        status=settings.IMPORT_STATUS
+    )
+    if not test:
+        x = session.execute(sql)
+        print x.context.statement
+    else:
+        print sql
 
-    for_update_status = session.execute(sql)
+    #...........................................
+    print "Select the records for update. print here / send_mail() in the view"
+    print "SELECT_RECORDS_FOR_UPDATE sql:"
+    sql = SELECT_RECORDS_FOR_UPDATE
+    print sql
+    if not test:
+        objs = session.execute(SELECT_RECORDS_FOR_UPDATE)
+        for o in objs:
+            print o
 
-    # execute the update statement
-    update_status = session.execute(UPDATE_STATUS)
+    #...........................................
+    print "Update cheque status to 's'uspictious"
+    print "UPDATE_STATUS_SUSPICIOUS sql:"
+    sql = UPDATE_STATUS_SUSPICIOUS
+    if not test:
+        x = session.execute(sql)
+        print x.context.statement
+    else:
+        print sql
 
-    # send the records selected to be updated to the business office
-    objs = session.execute(SELECT_RECORDS_FOR_UPDATE)
+    #...........................................
+    print "TEST sql:"
+    sql = "SELECT * FROM ccreconjb_rec WHERE jbstatus = '{}'".format(
+        settings.SUSPICIOUS
+    )
+    print sql
+    if not test:
+        objs = session.execute(sql)
+        for o in objs:
+            print o
 
-    # send duplicate records to the business office
+    #...........................................
+    print "Select the duplicates. print here / send_mail() in the view"
+    print "SELECT_DUPLICATES_2 sql:"
+    sql = SELECT_DUPLICATES_2(import_date=import_date)
+    print sql
+    if not test:
+        objs = session.execute(sql)
+        for o in objs:
+            print o
 
+    print "Find the cleared CheckNos and update gltr_rec as 'r'econciled"
+    print "and ccreconjb_rec as 'ar' (auto-reconciled)"
 
-    try:
-        session.execute("DROP TABLE tmp_reconupdta")
-        print "tmp_reconupdta dropped"
-    except:
-        print "no temp table: tmp_reconupdta"
+    #...........................................
+    print "Drop the temporary table, just in case. sql:"
+    sql = "DROP TABLE tmp_reconupdta"
+    print sql
+    if not test:
+        try:
+            session.execute(sql)
+            print "tmp_reconupdta dropped"
+        except:
+            print "no temp table: tmp_reconupdta"
 
-    # Find the cleared Check Numbers
-    sql = """
-        AND
-            ccreconjb_rec.jbimprt_date >= '{}'
-        ORDER BY
-            gle_rec.doc_no
-        INTO TEMP
-            tmp_reconupdta
-        WITH NO LOG
-    """.format(SELECT_CLEARED_CHEQUES, import_date)
+    #...........................................
+    print "Find the cleared Check Numbers"
+    print "SELECT_CLEARED_CHEQUES sql:"
+    sql = SELECT_CLEARED_CHEQUES(
+        import_date=import_date,
+        suspicious=settings.SUSPICIOUS,
+        auto_rec=settings.AUTO_REC,
+        requi_rich=settings.REQUI_RICH,
+        requi_vich=settings.REQUI_VICH
+    )
+    if not test:
+        x = session.execute(sql)
+        print x.context.statement
+    else:
+        print sql
 
-    select_reconciled = session.execute(sql)
-    # set gltr_rec as 'r'econciled
-    update_reconciled = session.execute(UPDATE_RECONCILED)
-    # set ccreconjb_rec as 'ar' (auto-reconciled)
-    update_status = session.execute(UPDATE_STATUS)
+    #...........................................
+    print "TEST: print selected duplicate cheques. sql:"
+    sql = "SELECT * FROM tmp_reconupdta"
+    print sql
+    if not test:
+        objs = session.execute("SELECT * FROM tmp_reconupdta")
+        for o in objs:
+            print o
 
-    # send the results to business office
-    objs = session.execute(SELECT_RECONCILIATED)
+    #...........................................
+    print "Set gltr_rec as 'r'econciled"
+    print "UPDATE_RECONCILED sql:"
+    sql = UPDATE_RECONCILED
+    if not test:
+        x = session.execute(sql)
+        print x.context.statement
+    else:
+        print sql
+
+    #...........................................
+    print "TEST sql:"
+    sql = "SELECT * FROM gltr_rec WHERE recon_stat = '{}'".format(
+        settings.REQUI_RICH
+    )
+    print sql
+    if not test:
+        objs = session.execute(sql)
+        for o in objs:
+            print o
+
+    #...........................................
+    print "Set ccreconjb_rec as 'ar' (auto-reconciled)"
+    print "UPDATE_STATUS_AUTO_REC sql:"
+    sql = UPDATE_STATUS_AUTO_REC
+    if not test:
+        x = session.execute(sql)
+        print x.context.statement
+    else:
+        print sql
+
+    #...........................................
+    print "TEST sql:"
+    sql = "SELECT * FROM ccreconjb_rec where jbstatus = '{}'".format(
+        settings.AUTO_REC
+    )
+    print sql
+    if not test:
+        objs = session.execute(sql)
+        for o in objs:
+            print o
+
+    #...........................................
+    print "select the reconciled checks. print here / send_mail() in view"
+    print "SELECT_RECONCILIATED sql:"
+    sql = SELECT_RECONCILIATED
+    print sql
+    if not test:
+        objs = session.execute(sql)
+        for o in objs:
+            print o
 
     session.close()
 
+    # end time
+    print datetime.now()
 
 ######################
 # shell command line
@@ -216,5 +371,11 @@ def main():
 if __name__ == "__main__":
     args = parser.parse_args()
     test = args.test
+    date = args.date
+
+    if not date:
+        print "mandatory option is missing: date\n"
+        parser.print_help()
+        exit(-1)
 
     sys.exit(main())

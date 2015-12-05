@@ -53,21 +53,16 @@
     {% include "includes/generic_form_multi.html" %}
 </div>
 <div class="column2 large-4 medium-6 small-12">
+    <h2>Stats</h2>
+    <dl>
+        <dt>Imported cheques</dt>
+        <dd>{{cheques|length}}</dd>
+        <dt>Chequest that failed to import</dt>
+        <dd>{{fail|length}}
+    </dl>
     {% if django_debug %}
     <h2>Earl</h2>
     {{earl}}
-    <h2>Fail</h2>
-    <ol>
-    {% for f in fail %}
-        <li>{{f}}</li>
-    {% endfor %}
-    </ol>
-    <h2>Cheques</h2>
-    <ol>
-    {% for c in cheques %}
-        <li>{{c.jbchkno}}</li>
-    {% endfor %}
-    </ol>
     {% endif %}
 </div>
 {% endblock %}

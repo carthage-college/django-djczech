@@ -3,7 +3,6 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.contrib.admin.views.decorators import staff_member_required
 
 from djczech.reconciliation.data.models import Cheque
 from djczech.reconciliation.forms import ChequeDataForm
@@ -25,7 +24,6 @@ logger = logging.getLogger(__name__)
 
 EARL = settings.INFORMIX_EARL
 
-@staff_member_required
 def cheque_data(request):
     """
     Form that allows the user to upload bank data in CSV format
@@ -110,7 +108,7 @@ def cheque_data(request):
                     session.rollback()
             session.commit()
             # execute the reconciliation process
-            #recce_cheques(request, session, import_date)
+            recce_cheques(request, session, import_date)
             # done
             session.close()
 
@@ -132,14 +130,12 @@ def cheque_data(request):
         context_instance=RequestContext(request)
     )
 
-@staff_member_required
 def cheque_search(request):
     # database connection
     engine = create_engine(EARL)
     Session = sessionmaker(bind=engine)
     session = Session()
 
-@staff_member_required
 def cheque_ajax(request):
     # database connection
     engine = create_engine(EARL)
@@ -171,7 +167,6 @@ def cheque_ajax(request):
     session.close()
     return JsonResponse(table.json())
 
-@staff_member_required
 def cheque_list(request):
     # database connection
     engine = create_engine(EARL)
@@ -190,7 +185,6 @@ def cheque_list(request):
     )
 
 
-@staff_member_required
 def cheque_detail(request, cid=None):
     if not cid:
         # search POST

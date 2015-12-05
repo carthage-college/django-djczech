@@ -2,14 +2,12 @@ from django.conf import settings
 
 STATUS=settings.IMPORT_STATUS
 
-# 2) populate the temporary tables
-
 # Populate temporary table A
 TMP_VOID_A = """
     SELECT
-        gltr_rec.gltr_no as gltr_noa, gle_rec.jrnl_ref, gle_rec.doc_id,
-        cknodoc_ida, gle_rec.doc_no as cknodoc_noa, gltr_rec.subs,
-        gltr_rec.stat, gltr_rec.recon_stat
+        gltr_rec.gltr_no as gltr_noa, gle_rec.jrnl_ref, gle_rec.doc_id as
+        cknodoc_ida, gle_rec.doc_no as cknodoc_noa, gltr_rec.subs, gltr_rec.stat,
+        gltr_rec.recon_stat
     FROM
         vch_rec, gle_rec, gltr_rec
     WHERE
@@ -39,12 +37,22 @@ TMP_VOID_A = """
     WITH NO LOG
 """
 
+# select * from temporary table A for testing
+SELECT_VOID_A = """
+    SELECT
+        *
+    FROM
+        tmp_voida
+    ORDER BY
+        cknodoc_noa, gltr_noa
+"""
+
 # Populate temporary table B
 TMP_VOID_B = """
     SELECT
-        gle_rec.doc_id cknodoc_idb, gltr_rec.gltr_no gltr_nob,
-        gle_rec.jrnl_ref, gle_rec.jrnl_no, gle_rec.descr GLEdescr,
-        gle_rec.doc_no cknodoc_nob, gle_rec.ctgry, gltr_rec.amt,
+        gle_rec.doc_id as cknodoc_idb, gltr_rec.gltr_no as gltr_nob,
+        gle_rec.jrnl_ref, gle_rec.jrnl_no, gle_rec.descr as GLEdescr,
+        gle_rec.doc_no as cknodoc_nob, gle_rec.ctgry, gltr_rec.amt,
         gltr_rec.recon_stat
     FROM
         vch_rec, gle_rec, gltr_rec, tmp_voida
@@ -69,17 +77,7 @@ TMP_VOID_B = """
     WITH NO LOG
 """
 
-# select * from temporary table A for testing
-SELECT_VOID_A = """
-    SELECT
-        *
-    FROM
-        tmp_voida
-    ORDER BY
-        cknodoc_noa, gltr_noa
-"""
-
-# 3) select * from temporary table B and send the data to the business office
+# select * from temporary table B and send the data to the business office
 SELECT_VOID_B = """
     SELECT
         *
@@ -90,8 +88,6 @@ SELECT_VOID_B = """
 """
 
 # Set reconciliation status to 'v'
-#requi_status = "v"
-requi_status = "V"
 UPDATE_RECONCILIATION_STATUS = """
     UPDATE
         gltr_rec
@@ -107,9 +103,9 @@ UPDATE_RECONCILIATION_STATUS = """
         )
     AND
         gltr_rec.recon_stat = 'O'
-""".format(requi_status)
+""".format(settings.REQUI_VICH)
 
-# 5) Find the duplicate check numbers and update those as 's'uspicious
+# Find the duplicate cheque numbers and update those as 's'uspicious
 
 # select import_date and stick it in a temp table, for some reason
 SELECT_CURRENT_BATCH_DATE = """
@@ -124,7 +120,7 @@ SELECT_CURRENT_BATCH_DATE = """
     WITH NO LOG
 """.format
 
-# select the duplicate checks
+# select the duplicate cheques
 SELECT_DUPLICATES_1 = """
     SELECT
         ccreconjb_rec.jbchkno, tmp_maxbtchdate.crrntbatchdate,
@@ -144,7 +140,7 @@ SELECT_DUPLICATES_1 = """
     WITH NO LOG
 """.format
 
-# selected for updating
+# select cheques for updating
 SELECT_FOR_UPDATING = """
     SELECT
         ccreconjb_rec.jbseqno, ccreconjb_rec.jbchkno,
@@ -169,12 +165,24 @@ SELECT_FOR_UPDATING = """
     WITH NO LOG
 """.format
 
-# update cheque status to 's'uspictious
-UPDATE_STATUS = """
+# select the records to be updated and send to the business office
+SELECT_RECORDS_FOR_UPDATE = """
+    SELECT
+        *
+    FROM
+        tmp_4updtstatus
+    ORDER BY
+        jbchkno, jbseqno
+"""
+
+# update cheque status to 's'uspicious
+#suspicious = 's'
+suspicious = 'SU'
+UPDATE_STATUS_SUSPICIOUS = """
     UPDATE
         ccreconjb_rec
     SET
-        ccreconjb_rec.jbstatus = 's'
+        ccreconjb_rec.jbstatus = '{}'
     WHERE
         ccreconjb_rec.jbseqno
     IN  (
@@ -185,19 +193,9 @@ UPDATE_STATUS = """
         )
     AND
         ccreconjb_rec.jbstatus = '{}'
-""".format(STATUS)
+""".format(settings.SUSPICIOUS, STATUS)
 
-# 6) select the records to be updated and send to the business office
-SELECT_RECORDS_FOR_UPDATE = """
-    SELECT
-        *
-    FROM
-        tmp_4updtstatus
-    ORDER BY
-        jbchkno, jbseqno
-"""
-
-# 7) send the results to the business office
+# send the results to the business office
 SELECT_DUPLICATES_2 = """
     SELECT
         ccreconjb_rec.jbseqno, ccreconjb_rec.jbchkno, ccreconjb_rec.jbchknolnk,
@@ -210,19 +208,20 @@ SELECT_DUPLICATES_2 = """
     FROM
         ccreconjb_rec, tmp_dupcknos
     WHERE
-        DATE(ccreconjb_rec.jbimprt_date) >= DATE('15-6-1')
+        ccreconjb_rec.jbimprt_date >= '{import_date}'
     AND
         ccreconjb_rec.jbchkno = tmp_dupcknos.jbchkno
     ORDER BY
         ccreconjb_rec.jbchkno, ccreconjb_rec.jbseqno
-"""
+""".format
 
-# 8) Find the cleared CheckNos and update gltr_rec as 'r'econciled
+# Find the cleared CheckNos and update gltr_rec as 'r'econciled
 # and ccreconjb_rec as 'ar' (auto-reconciled)
+
 SELECT_CLEARED_CHEQUES = """
     SELECT
         ccreconjb_rec.jbimprt_date, ccreconjb_rec.jbseqno,
-        ccreconjb_rec.jbchkno, ccreconjb_rec.jbchk_reconupdtanolnk,
+        ccreconjb_rec.jbchkno, ccreconjb_rec.jbchknolnk,
         ccreconjb_rec.jbstatus, ccreconjb_rec.jbaction,
         ccreconjb_rec.jbamount, ccreconjb_rec.jbamountlnk,
         ccreconjb_rec.jbaccount, ccreconjb_rec.jbstatus_date,
@@ -255,9 +254,9 @@ SELECT_CLEARED_CHEQUES = """
     AND
         ccreconjb_rec.jbamountlnk = gltr_rec.amt
     AND
-        ccreconjb_rec.jbstatus NOT IN("s","ar","er","mr")
+        ccreconjb_rec.jbstatus NOT IN("{suspicious}","{auto_rec}","er","mr")
     AND
-        gltr_rec.recon_stat NOT IN("r","v")
+        gltr_rec.recon_stat NOT IN("{requi_rich}","{requi_vich}")
     AND
         ccreconjb_rec.jbimprt_date >= '{import_date}'
     ORDER BY
@@ -271,7 +270,7 @@ UPDATE_RECONCILED = """
     UPDATE
         gltr_rec
     SET
-        gltr_rec.recon_stat = 'r'
+        gltr_rec.recon_stat = '{}'
     WHERE
         gltr_rec.gltr_no
     IN  (
@@ -282,13 +281,13 @@ UPDATE_RECONCILED = """
         )
     AND
         gltr_rec.recon_stat = 'O'
-"""
+""".format(settings.REQUI_RICH)
 
-UPDATE_STATUS = """
+UPDATE_STATUS_AUTO_REC = """
     UPDATE
         ccreconjb_rec
     SET
-        ccreconjb_rec.jbstatus = 'ar'
+        ccreconjb_rec.jbstatus = '{}'
     WHERE
         ccreconjb_rec.jbseqno
     IN  (
@@ -299,7 +298,7 @@ UPDATE_STATUS = """
         )
     AND
         ccreconjb_rec.jbstatus = '{}'
-""".format(STATUS)
+""".format(settings.AUTO_REC, STATUS)
 
 SELECT_RECONCILIATED = """
     SELECT

@@ -47,8 +47,7 @@ def recce_cheques(request, session, import_date):
     )
 
     # set reconciliation status to 'v'
-    #session.execute(UPDATE_RECONCILIATION_STATUS)
-    session.execute(UPDATE_RECONCILIATION_STATUS_TEST)
+    session.execute(UPDATE_RECONCILIATION_STATUS)
 
     # Find the duplicate check numbers and update those as 's'uspicious
 
@@ -65,6 +64,9 @@ def recce_cheques(request, session, import_date):
         session.execute("DROP TABLE tmp_4updtstatus")
     except:
         pass
+
+    # select import_date and stick it in a temp table, for some reason
+    session.execute(SELECT_CURRENT_BATCH_DATE)
 
     # Select the duplicates
     duplicate_check_numbers = session.execute(
@@ -88,7 +90,9 @@ def recce_cheques(request, session, import_date):
     )
 
     # Send duplicate records to the business office
-    objs = session.execute(SELECT_DUPLICATES_2)
+    objs = session.execute(
+        SELECT_DUPLICATES_2(import_date=import_date)
+    )
 
     send_mail(
         request, TO_LIST,

@@ -87,7 +87,7 @@ ORDER BY
 UPDATE
     gltr_rec
 SET
-    gltr_rec.recon_stat = 'VE'
+    gltr_rec.recon_stat = 'V'
 WHERE
     gltr_rec.gltr_no
 IN  (
@@ -100,7 +100,7 @@ AND
     gltr_rec.recon_stat = 'O';
 
 /* TEST */
-SELECT * FROM gltr_rec WHERE recon_stat = 'VE';
+SELECT * FROM gltr_rec WHERE recon_stat = 'V';
 
 /*
 TEST the above UPDATE with SELECT statement:
@@ -198,11 +198,11 @@ ORDER BY
     jbchkno, jbseqno;
 
 /* Update cheque status to 's'uspictious */
-/* UPDATE_STATUS */
+/* UPDATE_STATUS_SUSPICIOUS */
 UPDATE
     ccreconjb_rec
 SET
-    ccreconjb_rec.jbstatus = 'SU'
+    ccreconjb_rec.jbstatus = 'S'
 WHERE
     ccreconjb_rec.jbseqno
 IN  (
@@ -215,7 +215,7 @@ AND
     ccreconjb_rec.jbstatus = 'EYE';
 
 /* TEST */
-SELECT * FROM ccreconjb_rec WHERE jbstatus = 'SU';
+SELECT * FROM ccreconjb_rec WHERE jbstatus = 'S';
  
 /*
 TEST the above UPDATE with SELECT statement
@@ -247,7 +247,7 @@ SELECT
 FROM
     ccreconjb_rec, tmp_dupcknos
 WHERE
-    DATE(ccreconjb_rec.jbimprt_date) >= DATE('2015-12-23')
+    ccreconjb_rec.jbimprt_date >= DATE('2015-12-23')
 AND
     ccreconjb_rec.jbchkno = tmp_dupcknos.jbchkno
 ORDER BY
@@ -296,9 +296,9 @@ AND
 AND
     ccreconjb_rec.jbamountlnk = gltr_rec.amt
 AND
-    ccreconjb_rec.jbstatus NOT IN("SU","ARR","er","mr")
+    ccreconjb_rec.jbstatus NOT IN("S","AR","er","mr")
 AND
-    gltr_rec.recon_stat NOT IN("RE","VE")
+    gltr_rec.recon_stat NOT IN("R","V")
 AND
     ccreconjb_rec.jbimprt_date >= DATE('2015-12-23')
 ORDER BY
@@ -315,7 +315,7 @@ SELECT * FROM tmp_reconupdta;
 UPDATE
     gltr_rec
 SET
-    gltr_rec.recon_stat = 'RE'
+    gltr_rec.recon_stat = 'R'
 WHERE
     gltr_rec.gltr_no
 IN  (
@@ -328,7 +328,7 @@ AND
     gltr_rec.recon_stat = 'O';
 
 /* TEST */
-SELECT * FROM gltr_rec WHERE recon_stat = 'RE'
+SELECT * FROM gltr_rec WHERE recon_stat = 'R'
 
 /*
 TEST the above UPDATE with SELECT statement
@@ -352,7 +352,7 @@ AND
 UPDATE
     ccreconjb_rec
 SET
-    ccreconjb_rec.jbstatus = 'ARR'
+    ccreconjb_rec.jbstatus = 'AR'
 WHERE
     ccreconjb_rec.jbseqno
 IN  (
@@ -394,11 +394,48 @@ ORDER BY
     tmp_reconupdta.cknodoc_no;
 
 /* TEST */
-SELECT * FROM ccreconjb_rec WHERE jbstatus = 'EYE';
-SELECT * FROM ccreconjb_rec WHERE jbstatus = 'ARR';
+SELECT * FROM gltr_rec WHERE recon_stat = 'O';
+SELECT * FROM gltr_rec WHERE recon_stat = 'R';
+SELECT * FROM gltr_rec WHERE recon_stat = 'V';
+SELECT * FROM gltr_rec WHERE recon_stat = 'v';
+
+SELECT * FROM ccreconjb_rec WHERE jbstatus = 'S';
+SELECT * FROM ccreconjb_rec where jbstatus = 'I';
+SELECT * FROM ccreconjb_rec where jbstatus = 'EYE';
+SELECT * FROM ccreconjb_rec where jbstatus = 'AR';
 
 /* reset */
+UPDATE
+    gltr_rec
+SET
+    gltr_rec.recon_stat = 'O'
+WHERE
+    gltr_rec.recon_stat = 'V';
+
+UPDATE
+    ccreconjb_rec
+SET
+    ccreconjb_rec.jbstatus = 'EYE'
+WHERE
+    ccreconjb_rec.jbstatus = 'S';
+
+UPDATE
+    gltr_rec
+SET
+    gltr_rec.recon_stat = 'O'
+WHERE
+    gltr_rec.recon_stat = 'R';
+
+UPDATE
+    ccreconjb_rec
+SET
+    ccreconjb_rec.jbstatus = 'EYE'
+WHERE
+    ccreconjb_rec.jbstatus = 'AR;
+
+
+/* start over */
 DELETE ccreconjb_rec WHERE jbstatus = 'EYE';
-DELETE ccreconjb_rec WHERE jbstatus = 'ARR';
+DELETE ccreconjb_rec WHERE jbstatus = 'AR';
 
 /* Fin */
