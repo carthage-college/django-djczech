@@ -30,6 +30,7 @@ def cheque_data(request):
     and then inserts the data into the database
     """
     # lists for recording results
+    data = None
     cheques = []
     fail = []
     if request.method=='POST':
@@ -108,25 +109,29 @@ def cheque_data(request):
                     session.rollback()
             session.commit()
             # execute the reconciliation process
-            recce_cheques(request, session, import_date)
-            # done
-            session.close()
+            data = recce_cheques(request, session, import_date)
 
             if settings.DEBUG:
-                return render_to_response(
-                    "reconciliation/cheque/data_form.html",
-                    {"form":form,"earl":EARL,"fail":fail,"cheques":cheques},
+                rsvp = render_to_response(
+                    "reconciliation/cheque/data_form.html", {
+                        "form":form,"earl":EARL,"fail":fail,"cheques":cheques,
+                        "data":data
+                    },
                     context_instance=RequestContext(request)
                 )
+                # done
+                session.close()
+                return rsvp
             else:
+                # done
+                session.close()
                 return HttpResponseRedirect(
                     reverse("cheque_data_success")
                 )
     else:
         form = ChequeDataForm()
     return render_to_response(
-        "reconciliation/cheque/data_form.html",
-        {"form":form,"earl":EARL,"fail":fail,"cheques":cheques},
+        "reconciliation/cheque/data_form.html", {"form":form,"earl":EARL},
         context_instance=RequestContext(request)
     )
 
