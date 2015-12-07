@@ -133,7 +133,7 @@ SELECT
 FROM
     ccreconjb_rec
 WHERE
-    jbimprt_date >= DATE('2015-12-23')
+    jbimprt_date >= DATE('2015-12-21')
 INTO TEMP
     tmp_maxbtchdate
 WITH NO LOG;
@@ -151,7 +151,7 @@ SELECT
 FROM
     ccreconjb_rec, tmp_maxbtchdate
 WHERE
-    ccreconjb_rec.jbimprt_date >= DATE('2015-12-23')
+    ccreconjb_rec.jbimprt_date >= DATE('2015-12-21')
 GROUP BY
     ccreconjb_rec.jbchkno, tmp_maxbtchdate.crrntbatchdate
 HAVING
@@ -177,7 +177,7 @@ SELECT
 FROM
     ccreconjb_rec, tmp_dupcknos
 WHERE
-    ccreconjb_rec.jbimprt_date >= DATE('2015-12-23')
+    ccreconjb_rec.jbimprt_date >= DATE('2015-12-21')
 AND
     ccreconjb_rec.jbchkno = tmp_dupcknos.jbchkno
 AND
@@ -247,7 +247,7 @@ SELECT
 FROM
     ccreconjb_rec, tmp_dupcknos
 WHERE
-    ccreconjb_rec.jbimprt_date >= DATE('2015-12-23')
+    ccreconjb_rec.jbimprt_date >= DATE('2015-12-21')
 AND
     ccreconjb_rec.jbchkno = tmp_dupcknos.jbchkno
 ORDER BY
@@ -300,7 +300,7 @@ AND
 AND
     gltr_rec.recon_stat NOT IN("R","V")
 AND
-    ccreconjb_rec.jbimprt_date >= DATE('2015-12-23')
+    ccreconjb_rec.jbimprt_date >= DATE('2015-12-21')
 ORDER BY
     gle_rec.doc_no
 INTO TEMP
@@ -431,7 +431,7 @@ UPDATE
 SET
     ccreconjb_rec.jbstatus = 'EYE'
 WHERE
-    ccreconjb_rec.jbstatus = 'AR;
+    ccreconjb_rec.jbstatus = 'AR';
 
 
 /* start over */
