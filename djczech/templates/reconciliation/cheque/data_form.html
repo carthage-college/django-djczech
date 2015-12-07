@@ -103,24 +103,33 @@
         {{earl}}
         <br>
         {% if data %}
-            <h2 title="SELECT_VOID_B">Voided checks</h2>
-            {% with objs=data.select_voidb %}
-                {% include "dashboard/cheque/data.inc.html" %}
-            {% endwith %}
-            <h2 title="SELECT_RECORDS_FOR_UPDATE">
-                Checks selected for update
-            </h2>
-            {% with objs=data.select_records_for_update %}
-                {% include "dashboard/cheque/data.inc.html" %}
-            {% endwith %}
-            <h2 title="SELECT_DUPLICATES_2">Duplicate checks</h2>
-            {% with objs=data.select_duplicates_2 %}
-                {% include "dashboard/cheque/data.inc.html" %}
-            {% endwith %}
-            <h2 title="SELECT_RECONCILIATED">Reconciled checks</h2>
-            {% with objs=data.select_reconciled %}
-                {% include "dashboard/cheque/data.inc.html" %}
-            {% endwith %}
+            {% if data.select_voidb %}
+                <h2 title="SELECT_VOID_B">Voided checks</h2>
+                {% with objs=data.select_voidb %}
+                    {% include "dashboard/cheque/select_void_b.inc.html" %}
+                {% endwith %}
+            {% endif %}
+            {% if data.select_records_for_update %}
+                <h2 title="SELECT_RECORDS_FOR_UPDATE">
+                    Checks selected for update
+                    "{{data.select_records_for_update}}"
+                </h2>
+                {% with objs=data.select_records_for_update %}
+                    {% include "dashboard/cheque/data.inc.html" %}
+                {% endwith %}
+            {% endif %}
+            {% if data.select_duplicates_2 %}
+                <h2 title="SELECT_DUPLICATES_2">Duplicate checks</h2>
+                {% with objs=data.select_duplicates_2 %}
+                    {% include "dashboard/cheque/data.inc.html" %}
+                {% endwith %}
+            {% endif %}
+            {% if data.select_reconciled %}
+                <h2 title="SELECT_RECONCILIATED">Reconciled checks</h2>
+                {% with objs=data.select_reconciled %}
+                    {% include "dashboard/cheque/data.inc.html" %}
+                {% endwith %}
+            {% endif %}
         {% endif %}
     {% endif %}
 </div>
