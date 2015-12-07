@@ -17,8 +17,7 @@
             </tr>
         </thead>
         <tbody>
-        {% if objs %}
-            {% for o in objs %}
+        {% for o in objs %}
             <tr>
             <td>{{o.jbchkno}}</td>
             <td>{{o.jbchknolnk}}</td>
@@ -33,26 +32,7 @@
             <td>{{o.jbpostd_dat}}</td>
             <td>{{o.jbpayee}}</td>
             </tr>
-            {% endfor %}
-        {% endif %}
-        {% if data.objs %}
-            {% for o in data.objs %}
-            <tr>
-            <td>{{o.jbchkno}}</td>
-            <td>{{o.jbchknolnk}}</td>
-            <td>{{o.jbstatus}}</td>
-            <td>{{o.jbstatus_date}}</td>
-            <td>{{o.jbimprt_date}}</td>
-            <td>{{o.jbaction}}</td>
-            <td>{{o.jbaccount}}</td>
-            <td>{{o.jbamount}}</td>
-            <td>{{o.jbamountlnk}}</td>
-            <td>{{o.jbissue_date}}</td>
-            <td>{{o.jbpostd_dat}}</td>
-            <td>{{o.jbpayee}}</td>
-            </tr>
-            {% endfor %}
-        {% endif %}
+        {% endfor %}
         </tbody>
         <tfoot>
             <tr>
