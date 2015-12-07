@@ -98,7 +98,7 @@ def main():
     sql = SELECT_VOID_A
     print sql
     if not test:
-        objs = session.execute(sql)
+        objs = session.execute(sql).fetchall()
         for o in objs:
             print o
 
@@ -118,7 +118,7 @@ def main():
     sql = SELECT_VOID_B
     print sql
     if not test:
-        objs = session.execute(sql)
+        objs = session.execute(sql).fetchall()
         for o in objs:
             print o
 
@@ -141,7 +141,7 @@ def main():
     )
     print sql
     if not test:
-        objs = session.execute(sql)
+        objs = session.execute(sql).fetchall()
         for o in objs:
             print o
 
@@ -209,7 +209,7 @@ def main():
     sql = "SELECT * FROM tmp_dupcknos"
     print sql
     if not test:
-        objs = session.execute(sql)
+        objs = session.execute(sql).fetchall()
         for o in objs:
             print o
 
@@ -232,7 +232,7 @@ def main():
     sql = SELECT_RECORDS_FOR_UPDATE
     print sql
     if not test:
-        objs = session.execute(SELECT_RECORDS_FOR_UPDATE)
+        objs = session.execute(SELECT_RECORDS_FOR_UPDATE).fetchall()
         for o in objs:
             print o
 
@@ -253,7 +253,7 @@ def main():
     )
     print sql
     if not test:
-        objs = session.execute(sql)
+        objs = session.execute(sql).fetchall()
         for o in objs:
             print o
 
@@ -263,7 +263,7 @@ def main():
     sql = SELECT_DUPLICATES_2(import_date=import_date)
     print sql
     if not test:
-        objs = session.execute(sql)
+        objs = session.execute(sql).fetchall()
         for o in objs:
             print o
 
@@ -302,7 +302,7 @@ def main():
     sql = "SELECT * FROM tmp_reconupdta"
     print sql
     if not test:
-        objs = session.execute("SELECT * FROM tmp_reconupdta")
+        objs = session.execute("SELECT * FROM tmp_reconupdta").fetchall()
         for o in objs:
             print o
 
@@ -323,7 +323,7 @@ def main():
     )
     print sql
     if not test:
-        objs = session.execute(sql)
+        objs = session.execute(sql).fetchall()
         for o in objs:
             print o
 
@@ -344,7 +344,7 @@ def main():
     )
     print sql
     if not test:
-        objs = session.execute(sql)
+        objs = session.execute(sql).fetchall()
         for o in objs:
             print o
 
@@ -354,7 +354,7 @@ def main():
     sql = SELECT_RECONCILIATED
     print sql
     if not test:
-        objs = session.execute(sql)
+        objs = session.execute(sql).fetchall()
         for o in objs:
             print o
 
