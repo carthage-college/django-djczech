@@ -1,0 +1,46 @@
+<div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover cheques-data">
+        <thead>
+            <tr>
+                <th>Check # doc ID</th>
+                <th>Gltr # B</th>
+                <th>Journal Ref</th>
+                <th>Journal #</th>
+                <th>GLE Desc</th>
+                <th>Check # doc # B</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Recon status</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for o in objs %}
+            <tr>
+            <td>{{o.cknodoc_idb}}</td>
+            <td>{{o.gltr_nob}}</td>
+            <td>{{o.jrnl_ref}}</td>
+            <td>{{o.jrnl_no}}</td>
+            <td>{{o.GLEdescr}}</td>
+            <td>{{o.cknodoc_nob}}</td>
+            <td>{{o.ctgry}}</td>
+            <td>{{o.amt}}</td>
+            <td>{{o.recon_stat}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>Check # doc ID</th>
+                <th>Gltr # B</th>
+                <th>Journal Ref</th>
+                <th>Journal #</th>
+                <th>GLE Desc</th>
+                <th>Check # doc # B</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Recon status</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<!-- /.table-responsive -->
