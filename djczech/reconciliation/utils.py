@@ -1,7 +1,6 @@
 from django.conf import settings
 
 from djczech.reconciliation.sql import *
-from djtools.utils.mail import send_mail
 from djtools.fields import NOW
 
 
@@ -35,16 +34,8 @@ def recce_cheques(request, session, import_date):
     # Populate void temp table B
     session.execute(TMP_VOID_B)
 
-    # select * from temp table B and send the data to the business office
-    select_voidb = session.execute(SELECT_VOID_B)
-
-    if not settings.DEBUG:
-        send_mail(
-            request, TO_LIST,
-            "[DJ Cheque] Voided checks", settings.ADMINS[0][1],
-            "reconciliation/cheque/email.html",
-            {"title":"Voided checks","objs":select_voidb}, settings.MANAGERS
-        )
+    # Display temp table B data
+    select_voidb = session.execute(SELECT_VOID_B).fetchall()
 
     # set reconciliation status to 'v'
     session.execute(UPDATE_RECONCILIATION_STATUS)
@@ -80,33 +71,18 @@ def recce_cheques(request, session, import_date):
         )
     )
 
-    # Send the records selected to be updated to the business office
-    select_records_for_update = session.execute(SELECT_RECORDS_FOR_UPDATE)
+    # Display the records selected to be updated
+    select_records_for_update = session.execute(
+        SELECT_RECORDS_FOR_UPDATE
+    ).fetchall()
 
-    if not settings.DEBUG:
-        send_mail(
-            request, TO_LIST,
-            "[DJ Cheque] Checks selected for update", settings.ADMINS[0][1],
-            "reconciliation/cheque/email.html",
-            {"title":"Voided checks","objs":select_records_for_update},
-            settings.MANAGERS
-        )
     # Update cheque status to 's'uspictious
     session.execute(UPDATE_STATUS_SUSPICIOUS)
 
-    # Send duplicate records to the business office
+    # Display duplicate records
     select_duplicates_2 = session.execute(
         SELECT_DUPLICATES_2(import_date=import_date)
-    )
-
-    if not settings.DEBUG:
-        send_mail(
-            request, TO_LIST,
-            "[DJ Cheque] Duplicate checks", settings.ADMINS[0][1],
-            "reconciliation/cheque/email.html",
-            {"title":"Duplicate checks","objs":select_duplicates_2},
-            settings.MANAGERS
-        )
+    ).fetchall()
 
     # Find the cleared CheckNos and update gltr_rec as 'r'econciled
     # and ccreconjb_rec as 'ar' (auto-reconciled)
@@ -131,17 +107,8 @@ def recce_cheques(request, session, import_date):
     update_reconciled = session.execute(UPDATE_RECONCILED)
     # Set ccreconjb_rec as 'ar' (auto-reconciled)
     update_status = session.execute(UPDATE_STATUS_AUTO_REC)
-    # Send the results to business office
-    select_reconciled = session.execute(SELECT_RECONCILIATED)
-
-    if not settings.DEBUG:
-        send_mail(
-            request, TO_LIST,
-            "[DJ Cheque] Reconciled checks", settings.ADMINS[0][1],
-            "reconciliation/cheque/email.html",
-            {"title":"Reconciled checks","objs":select_reconciled},
-            settings.MANAGERS
-        )
+    # Display the checks that have been reconciled
+    select_reconciled = session.execute(SELECT_RECONCILIATED).fetchall()
 
     return {
         "select_voidb":select_voidb,
