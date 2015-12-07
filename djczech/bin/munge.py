@@ -42,6 +42,11 @@ parser.add_argument(
     dest="phile"
 )
 parser.add_argument(
+    "-d", "--date",
+    help="Import date format: 1891-05-01",
+    dest="date"
+)
+parser.add_argument(
     "--test",
     action='store_true',
     help="Dry run?",
@@ -54,9 +59,9 @@ def main():
     """
 
     # convert date to datetime
-    import_date = datetime.combine(
-        TODAY, datetime.min.time()
-    )
+    import_date = datetime.strptime(date, "%Y-%m-%d")
+    print "import_date = {}".format(import_date)
+
     # for some reason we set jbpayee equal to the import date
     # plus user info
     jbpayee = "{}_{}".format(
@@ -145,10 +150,11 @@ def main():
 if __name__ == "__main__":
     args = parser.parse_args()
     phile = args.phile
+    date = args.date
     test = args.test
 
-    if not phile:
-        print "mandatory option is missing: file name\n"
+    if not phile or not date:
+        print "mandatory options are missing: file name and date\n"
         parser.print_help()
         exit(-1)
     sys.exit(main())
