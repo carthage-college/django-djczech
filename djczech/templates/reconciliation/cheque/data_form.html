@@ -3,7 +3,27 @@
     Reconciliation &mdash; DJ Czech &mdash;
     Carthage College
 {% endblock %}
+{% block extra_style %}
+    <link href="//www.carthage.edu/static/vendor/dashboard/css/plugins/dataTables/jquery.dataTables.min.css"
+        rel="stylesheet">
+    <link href="//www.carthage.edu/static/vendor/dashboard/js/plugins/dataTables/extensions/TableTools/css/dataTables.tableTools.min.css"
+        rel="stylesheet">
+    <style type="text/css">
+    div.growlUI { background: url(//www.carthage.edu/themes/shared/img/ico/check48.png) no-repeat 10px 10px; margin-top:60px; }
+    div.growlUI h1, div.growlUI h2 {
+    color: white; padding: 5px 5px 5px 75px; text-align: left;
+    font-size:1.4em;}
+    table.dataTable > tbody > tr:hover > td.minor { background-color: #ccf; }
+    table.dataTable > tbody > tr:nth-child(2n+1) > td.minor { background-color: #ccf; }
+    table.dataTable > tbody tr.selected { background-color: #b0bed9 !important; }
+    table.dataTable > tbody tr:nth-child(even):hover td{ background-color: #fae7b5 !important; }
+    table.dataTable > tbody tr:nth-child(odd):hover td { background-color: #fae7b5 !important; }
+    </style>
+{% endblock %}
 {% block extra_javascript %}
+    <script src="//www.carthage.edu/static/vendor/dashboard/js/plugins/dataTables/jquery.dataTables.js"></script>
+    <script src="//www.carthage.edu/static/vendor/dashboard/js/plugins/dataTables/extensions/TableTools/js/dataTables.tableTools.min.js"></script>
+    <script src="//www.carthage.edu/static/vendor/dashboard/js/plugins/dataTables/dataTables.bootstrap.js"></script>
     <script src="//www.carthage.edu/static/vendor/jquery/ui/datepicker/js/jquery-ui-1.10.4.custom.min.js"
         type="text/javascript" charset="utf-8"></script>
     <script src="//www.carthage.edu/static/vendor/js/spin.min.js"
@@ -32,6 +52,24 @@
             var target = document.getElementById("profile");
             var spinner = new Spinner(opts).spin(target);
             spinner.stop(target);
+            /*  Initialise the DataTables: */
+            var table = $('.cheques-data').dataTable({
+                "sDom": 'T<"clear">lfrtip',
+                "oTableTools": {
+                    "sSwfPath": "//www.carthage.edu/static/vendor/dashboard/js/plugins/dataTables/extensions/TableTools/swf/copy_csv_xls_pdf.swf",
+                    "aButtons": [
+                        "print", "xls", {
+                            "sExtends": "pdf",
+                            "sPdfOrientation": "landscape"
+                        },
+                    ],
+                },
+                "order": [[ 1, "asc" ]],
+                "lengthMenu": [
+                    [100, 250, 500, 1000, 2000, -1],
+                    [100, 250, 500, 1000, 2000, "All"]
+                ]
+            });
 
             $("#id_import_date").datepicker({
                 firstDay:1,appendText:"(format yyyy-mm-dd)",
@@ -55,14 +93,35 @@
 <div class="column2 large-4 medium-6 small-12">
     <h2>Stats</h2>
     <dl>
-        <dt>Imported cheques</dt>
+        <dt>Imported checks</dt>
         <dd>{{cheques|length}}</dd>
-        <dt>Chequest that failed to import</dt>
+        <dt>Checks that failed to import</dt>
         <dd>{{fail|length}}
     </dl>
     {% if django_debug %}
-    <h2>Earl</h2>
-    {{earl}}
+        <h2>Earl</h2>
+        {{earl}}
+        <br>
+        {% if data %}
+            <h2 title="SELECT_VOID_B">Voided checks</h2>
+            {% with objs=data.select_voidb %}
+                {% include "dashboard/cheque/data.inc.html" %}
+            {% endwith %}
+            <h2 title="SELECT_RECORDS_FOR_UPDATE">
+                Checks selected for update
+            </h2>
+            {% with objs=data.select_records_for_update %}
+                {% include "dashboard/cheque/data.inc.html" %}
+            {% endwith %}
+            <h2 title="SELECT_DUPLICATES_2">Duplicate checks</h2>
+            {% with objs=data.select_duplicates_2 %}
+                {% include "dashboard/cheque/data.inc.html" %}
+            {% endwith %}
+            <h2 title="SELECT_RECONCILIATED">Reconciled checks</h2>
+            {% with objs=data.select_reconciled %}
+                {% include "dashboard/cheque/data.inc.html" %}
+            {% endwith %}
+        {% endif %}
     {% endif %}
 </div>
 {% endblock %}

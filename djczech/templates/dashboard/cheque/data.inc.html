@@ -1,35 +1,73 @@
 <div class="table-responsive">
-    <table class="table table-striped table-bordered table-hover" id="cheques-data">
+    <table class="table table-striped table-bordered table-hover cheques-data">
         <thead>
             <tr>
                 <th>Check #</th>
+                <th>Check # link</th>
                 <th id="jbstatus">Status</th>
                 <th>Status Date</th>
                 <th>Import Date</th>
                 <th id="jbaction">Action</th>
                 <th>Account</th>
                 <th>Amount</th>
+                <th>Amount link</th>
                 <th>Issued</th>
                 <th>Posted</th>
                 <th>Payee</th>
-                <th>Sequence #</th>
             </tr>
         </thead>
         <tbody>
+        {% if objs %}
+            {% for o in objs %}
+            <tr>
+            <td>{{o.jbchkno}}</td>
+            <td>{{o.jbchknolnk}}</td>
+            <td>{{o.jbstatus}}</td>
+            <td>{{o.jbstatus_date}}</td>
+            <td>{{o.jbimprt_date}}</td>
+            <td>{{o.jbaction}}</td>
+            <td>{{o.jbaccount}}</td>
+            <td>{{o.jbamount}}</td>
+            <td>{{o.jbamountlnk}}</td>
+            <td>{{o.jbissue_date}}</td>
+            <td>{{o.jbpostd_dat}}</td>
+            <td>{{o.jbpayee}}</td>
+            </tr>
+            {% endfor %}
+        {% endif %}
+        {% if data.objs %}
+            {% for o in data.objs %}
+            <tr>
+            <td>{{o.jbchkno}}</td>
+            <td>{{o.jbchknolnk}}</td>
+            <td>{{o.jbstatus}}</td>
+            <td>{{o.jbstatus_date}}</td>
+            <td>{{o.jbimprt_date}}</td>
+            <td>{{o.jbaction}}</td>
+            <td>{{o.jbaccount}}</td>
+            <td>{{o.jbamount}}</td>
+            <td>{{o.jbamountlnk}}</td>
+            <td>{{o.jbissue_date}}</td>
+            <td>{{o.jbpostd_dat}}</td>
+            <td>{{o.jbpayee}}</td>
+            </tr>
+            {% endfor %}
+        {% endif %}
         </tbody>
         <tfoot>
             <tr>
                 <th>Check #</th>
-                <th>Status</th>
+                <th>Check # link</th>
+                <th id="jbstatus">Status</th>
                 <th>Status Date</th>
                 <th>Import Date</th>
-                <th>Action</th>
+                <th id="jbaction">Action</th>
                 <th>Account</th>
                 <th>Amount</th>
+                <th>Amount link</th>
                 <th>Issued</th>
                 <th>Posted</th>
                 <th>Payee</th>
-                <th>Sequence #</th>
             </tr>
         </tfoot>
     </table>
