@@ -54,7 +54,6 @@ def main():
     print datetime.now()
 
     # convert date to datetime
-    #import_date = datetime.strptime(date, "%Y-%m-%d").date()
     import_date = datetime.strptime(date, "%Y-%m-%d")
     print "import_date = {}".format(import_date)
 
