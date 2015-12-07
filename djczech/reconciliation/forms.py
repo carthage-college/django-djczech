@@ -8,8 +8,8 @@ class ChequeDataForm(forms.Form):
     bank_data = forms.FileField(
         max_length = "768",
         help_text = '''
-            <p>Please upload a CSV file with values separated
-            by tabs or pipes "|".</p>
+            <p>Please upload a TSV (Tab Separated file) where the
+            field values are separated by tabs.</p>
         '''
     )
 
