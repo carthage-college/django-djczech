@@ -199,7 +199,7 @@ UPDATE_STATUS_SUSPICIOUS = """
 SELECT_DUPLICATES_2 = """
     SELECT
         ccreconjb_rec.jbseqno, ccreconjb_rec.jbchkno, ccreconjb_rec.jbchknolnk,
-        ccreconjb_rec.jbimprt_date,ccreconjb_rec.jbstatus,
+        ccreconjb_rec.jbimprt_date, ccreconjb_rec.jbstatus,
         ccreconjb_rec.jbaction, ccreconjb_rec.jbaccount,
         ccreconjb_rec.jbamount, ccreconjb_rec.jbamountlnk,
         ccreconjb_rec.jbstatus_date, tmp_dupcknos.crrntbatchdate,
@@ -226,8 +226,8 @@ SELECT_CLEARED_CHEQUES = """
         ccreconjb_rec.jbamount, ccreconjb_rec.jbamountlnk,
         ccreconjb_rec.jbaccount, ccreconjb_rec.jbstatus_date,
         ccreconjb_rec.jbpayee, gltr_rec.gltr_no, gle_rec.jrnl_ref,
-        gle_rec.jrnl_no, gle_rec.doc_id cknodoc_id, gltr_rec.amt,
-        gle_rec.doc_no cknodoc_no, gltr_rec.subs, gltr_rec.stat,
+        gle_rec.jrnl_no, gle_rec.doc_id as cknodoc_id, gltr_rec.amt,
+        gle_rec.doc_no as cknodoc_no, gltr_rec.subs, gltr_rec.stat,
         gltr_rec.recon_stat
     FROM
         vch_rec, gle_rec, gltr_rec, ccreconjb_rec
