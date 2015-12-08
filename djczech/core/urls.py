@@ -47,6 +47,13 @@ urlpatterns = patterns('',
             template_name="reconciliation/success.html"
         )
     ),
+    # direct to template
+    url(
+        r'^denied/$',
+        TemplateView.as_view(
+            template_name="reconciliation/denied.html"
+        ), name="access_denied"
+    ),
     # ajax post method to save various types characteristics to db and session
     url(
         r'^set-val/$', 'djczech.core.views.set_val', name="set_val"
