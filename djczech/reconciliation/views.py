@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.template import RequestContext
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -7,6 +8,8 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from djczech.reconciliation.data.models import Cheque
 from djczech.reconciliation.forms import ChequeDataForm
 from djczech.reconciliation.utils import handle_uploaded_file, recce_cheques
+
+from djtools.utils.users import in_group
 
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
@@ -29,111 +32,119 @@ def cheque_data(request):
     Form that allows the user to upload bank data in CSV format
     and then inserts the data into the database
     """
-    # lists for recording results
-    data = None
-    cheques = []
-    fail = []
-    if request.method=='POST':
-        form = ChequeDataForm(request.POST, request.FILES)
-        if form.is_valid():
-            # database connection
-            engine = create_engine(EARL)
-            Session = sessionmaker(bind=engine)
-            session = Session()
-            # convert date to datetime
-            import_date = datetime.combine(
-                form.cleaned_data['import_date'], datetime.min.time()
-            )
-            # for some reason we set jbpayee equal to the import date
-            # plus user info
-            jbpayee = "{}_{}".format(
-                form.cleaned_data['import_date'], request.user.username
-            )
-            # CSV headers
-            fieldnames = (
-                "jbstatus_date", "jbstatus", "jbamount",
-                "jbaccount", "jbchkno", "jbpayee"
-            )
-            # obtain the CSV file from POST and upload
-            phile = handle_uploaded_file(request.FILES['bank_data'])
-            # remove all lines up to and including the headers line
-            with open(phile, "r") as f:
-                n = 0
-                for line in f.readlines():
-                    n += 1
-                    if 'As of date' in line: # line in which field headers live
-                        break
-                f.close()
-                f = islice(open(phile, "r"), n, None)
+    # make this a decorator
+    from djzbar.utils.mssql import get_userid
+    uid = get_userid(request.GET.get('cid'))
+    try:
+        user = User.objects.get(pk=uid)
+    except:
+        return HttpResponseRedirect(reverse("access_denied"))
 
-            # read the CSV file
-            reader = csv.DictReader(f, fieldnames, delimiter='\t')
-
-            # for each line create a Cheque object
-            for r in reader:
-                # convert amount from string to float and strip dollar sign
-                try:
-                    jbamount = float(r["jbamount"][1:].replace(',',''))
-                except:
-                    jbamount = 0
-                # status date
-                try:
-                    jbstatus_date = datetime.strptime(
-                        r["jbstatus_date"], "%m/%d/%Y"
-                    )
-                except:
-                    jbstatus_date = None
-                # check number
-                try:
-                    cheque_number = int(r["jbchkno"])
-                except:
-                    cheque_number = 0
-
-                # create a Cheque object
-                cheque = Cheque(
-                    jbimprt_date=import_date,
-                    jbstatus_date=jbstatus_date,
-                    jbchkno=cheque_number, jbchknolnk=cheque_number,
-                    jbstatus=settings.IMPORT_STATUS, jbaction="",
-                    jbaccount=r["jbaccount"], jbamount=jbamount,
-                    jbamountlnk=jbamount, jbpayee=jbpayee
+    if in_group(user, "BusinessOfficeAdmin") or user.is_superuser:
+        # lists for recording results
+        data = None
+        cheques = []
+        fail = []
+        if request.method=='POST':
+            form = ChequeDataForm(request.POST, request.FILES)
+            if form.is_valid():
+                # database connection
+                engine = create_engine(EARL)
+                Session = sessionmaker(bind=engine)
+                session = Session()
+                # convert date to datetime
+                import_date = datetime.combine(
+                    form.cleaned_data['import_date'], datetime.min.time()
                 )
+                # for some reason we set jbpayee equal to the import date
+                # plus user info
+                jbpayee = "{}_{}".format(
+                    form.cleaned_data['import_date'], "business_office"
+                )
+                # CSV headers
+                fieldnames = (
+                    "jbstatus_date", "jbstatus", "jbamount",
+                    "jbaccount", "jbchkno", "jbpayee"
+                )
+                # obtain the CSV file from POST and upload
+                phile = handle_uploaded_file(request.FILES['bank_data'])
+                # remove all lines up to and including the headers line
+                with open(phile, "r") as f:
+                    n = 0
+                    for line in f.readlines():
+                        n += 1
+                        # line in which field headers live
+                        if 'As of date' in line:
+                            break
+                    f.close()
+                    f = islice(open(phile, "r"), n, None)
 
-                try:
-                    # insert the data
-                    session.add(cheque)
-                    session.flush()
-                    cheques.append(cheque.__dict__)
-                except exc.SQLAlchemyError as e:
-                    fail.append(cheque.__dict__)
-                    session.rollback()
-            session.commit()
-            # execute the reconciliation process
-            data = recce_cheques(request, session, import_date)
+                # read the CSV file
+                reader = csv.DictReader(f, fieldnames, delimiter='\t')
 
-            if settings.DEBUG:
+                # for each line create a Cheque object
+                for r in reader:
+                    # convert amount from string to float and strip dollar sign
+                    try:
+                        jbamount = float(r["jbamount"][1:].replace(',',''))
+                    except:
+                        jbamount = 0
+                    # status date
+                    try:
+                        jbstatus_date = datetime.strptime(
+                            r["jbstatus_date"], "%m/%d/%Y"
+                        )
+                    except:
+                        jbstatus_date = None
+                    # check number
+                    try:
+                        cheque_number = int(r["jbchkno"])
+                    except:
+                        cheque_number = 0
+
+                    # create a Cheque object
+                    cheque = Cheque(
+                        jbimprt_date=import_date,
+                        jbstatus_date=jbstatus_date,
+                        jbchkno=cheque_number, jbchknolnk=cheque_number,
+                        jbstatus=settings.IMPORT_STATUS, jbaction="",
+                        jbaccount=r["jbaccount"], jbamount=jbamount,
+                        jbamountlnk=jbamount, jbpayee=jbpayee
+                    )
+
+                    try:
+                        # insert the data
+                        session.add(cheque)
+                        session.flush()
+                        cheques.append(cheque.__dict__)
+                    except exc.SQLAlchemyError as e:
+                        fail.append(cheque.__dict__)
+                        session.rollback()
+                session.commit()
+                # execute the reconciliation process
+                data = recce_cheques(request, session, import_date)
+
                 rsvp = render_to_response(
                     "reconciliation/cheque/data_form.html", {
-                        "form":form,"earl":EARL,"fail":fail,"cheques":cheques,
-                        "data":data
+                        "form":form, "earl":EARL, "fail":fail,
+                        "cheques":cheques, "data":data
                     },
                     context_instance=RequestContext(request)
                 )
                 # done
                 session.close()
                 return rsvp
-            else:
-                # done
-                session.close()
-                return HttpResponseRedirect(
-                    reverse("cheque_data_success")
-                )
+        else:
+            form = ChequeDataForm()
+        return render_to_response(
+            "reconciliation/cheque/data_form.html", {
+                "form":form,"earl":EARL,"user":user,"uid":uid
+            },
+            context_instance=RequestContext(request)
+        )
     else:
-        form = ChequeDataForm()
-    return render_to_response(
-        "reconciliation/cheque/data_form.html", {"form":form,"earl":EARL},
-        context_instance=RequestContext(request)
-    )
+        return HttpResponseRedirect(reverse("access_denied"))
+
 
 def cheque_search(request):
     # database connection
