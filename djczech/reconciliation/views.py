@@ -23,7 +23,7 @@ import csv
 
 EARL = settings.INFORMIX_EARL
 
-@portal_auth_required(reverse_lazy("access_denied"))
+#@portal_auth_required(reverse_lazy("access_denied"))
 def cheque_data(request):
     """
     Form that allows the user to upload bank data in CSV format
@@ -109,9 +109,10 @@ def cheque_data(request):
                 except exc.SQLAlchemyError as e:
                     fail.append(cheque.__dict__)
                     session.rollback()
-            session.commit()
             # execute the reconciliation process
             data = recce_cheques(request, session, import_date)
+
+            session.commit()
 
             rsvp = render_to_response(
                 "reconciliation/cheque/data_form.html", {

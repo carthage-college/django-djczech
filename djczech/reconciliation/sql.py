@@ -254,9 +254,9 @@ SELECT_CLEARED_CHEQUES = """
     AND
         ccreconjb_rec.jbamountlnk = gltr_rec.amt
     AND
-        ccreconjb_rec.jbstatus NOT IN("{suspicious}","{auto_rec}","er","mr")
+        ccreconjb_rec.jbstatus NOT IN("{suspicious}","s","{auto_rec}","ar","er","mr")
     AND
-        gltr_rec.recon_stat NOT IN("{requi_rich}","{requi_vich}")
+        gltr_rec.recon_stat NOT IN("{requi_rich}","{requi_vich}","r","v")
     AND
         ccreconjb_rec.jbimprt_date >= '{import_date}'
     ORDER BY
