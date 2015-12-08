@@ -14,11 +14,6 @@ def handle_uploaded_file(f):
     return phile
 
 def recce_cheques(request, session, import_date):
-    # email distribution
-    if settings.DEBUG:
-        TO_LIST = [settings.ADMINS[0][1],]
-    else:
-        TO_LIST = [request.user.email,]
     # Drop the temporary tables, just in case
     try:
         session.execute("DROP TABLE tmp_voida")
