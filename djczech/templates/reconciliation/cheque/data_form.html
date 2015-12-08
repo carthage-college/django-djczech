@@ -113,6 +113,15 @@
                     {% include "dashboard/cheque/data.inc.html" %}
                 {% endwith %}
             {% endif %}
+            {% if data.select_remaining_eye %}
+                <h2 title="SELECT_REMAINING_EYE">
+                    Checks whose status has not changed during
+                    reconciliation process
+                </h2>
+                {% with objs=data.select_remaining_eye %}
+                    {% include "dashboard/cheque/data.inc.html" %}
+                {% endwith %}
+            {% endif %}
         {% endif %}
     {% endif %}
 </div>

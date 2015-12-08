@@ -308,3 +308,7 @@ SELECT_RECONCILIATED = """
     ORDER BY
         tmp_reconupdta.cknodoc_no
 """
+
+SELECT_REMAINING_EYE = """
+    SELECT * FROM ccreconjb_rec where jbstatus = '{}'
+""".format(STATUS)

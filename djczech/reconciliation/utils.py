@@ -104,10 +104,13 @@ def recce_cheques(request, session, import_date):
     update_status = session.execute(UPDATE_STATUS_AUTO_REC)
     # Display the checks that have been reconciled
     select_reconciled = session.execute(SELECT_RECONCILIATED).fetchall()
+    # Display any left over imported checks whose status has not changed
+    select_remaining_eye = session.execute(SELECT_REMAINING_EYE).fetchall()
 
     return {
         "select_voidb":select_voidb,
         "select_records_for_update":select_records_for_update,
         "select_duplicates_2": select_duplicates_2,
-        "select_reconciled":select_reconciled
+        "select_reconciled":select_reconciled,
+        "select_remaining_eye":select_remaining_eye
     }
