@@ -23,7 +23,7 @@ import csv
 
 EARL = settings.INFORMIX_EARL
 
-@portal_auth_required(reverse_lazy("access_denied"))
+@portal_auth_required("BusinessOfficeAdmin", reverse_lazy("access_denied"))
 def cheque_data(request):
     """
     Form that allows the user to upload bank data in CSV format
