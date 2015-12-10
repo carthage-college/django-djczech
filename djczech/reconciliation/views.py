@@ -11,9 +11,10 @@ from djczech.reconciliation.utils import handle_uploaded_file, recce_cheques
 from djtools.utils.users import in_group
 from djtools.decorators.auth import portal_auth_required
 
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import exc
 from sqlalchemy import desc
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from datatables import DataTable
 from datetime import date, datetime
 from itertools import islice
@@ -22,6 +23,18 @@ import os
 import csv
 
 EARL = settings.INFORMIX_EARL
+
+def portal_auth_required(uid, group):
+
+    uid = get_userid(request.GET.get('uid'))
+    try:
+        user = User.objects.get(pk=uid)
+    except:
+        return HttpResponseRedirect(resolved_redirect_url)
+    if group:
+        if not in_group(user, group) and not user.is_superuser:
+            return HttpResponseRedirect(resolved_redirect_url)
+    return True
 
 #@portal_auth_required("BusinessOfficeAdmin", reverse_lazy("access_denied"))
 def cheque_data(request):
@@ -42,6 +55,7 @@ def cheque_data(request):
             engine = create_engine(EARL)
             Session = sessionmaker(bind=engine)
             session = Session()
+            session.autoflush = False
             # convert date to datetime
             import_date = datetime.combine(
                 form.cleaned_data['import_date'], datetime.min.time()
@@ -110,10 +124,12 @@ def cheque_data(request):
                 except exc.SQLAlchemyError as e:
                     fail.append(cheque.__dict__)
                     session.rollback()
+
             # execute the reconciliation process
             data = recce_cheques(request, session, import_date)
 
-            session.commit()
+            # commit the reconciliation updates
+            #session.commit()
 
             rsvp = render_to_response(
                 "reconciliation/cheque/data_form.html", {
