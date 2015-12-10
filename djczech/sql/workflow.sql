@@ -396,13 +396,17 @@ ORDER BY
 /* TEST */
 SELECT * FROM gltr_rec WHERE recon_stat = 'O';
 SELECT * FROM gltr_rec WHERE recon_stat = 'R';
+SELECT * FROM gltr_rec WHERE recon_stat = 'r';
 SELECT * FROM gltr_rec WHERE recon_stat = 'V';
 SELECT * FROM gltr_rec WHERE recon_stat = 'v';
 
 SELECT * FROM ccreconjb_rec WHERE jbstatus = 'S';
-SELECT * FROM ccreconjb_rec where jbstatus = 'I';
-SELECT * FROM ccreconjb_rec where jbstatus = 'EYE';
-SELECT * FROM ccreconjb_rec where jbstatus = 'AR';
+SELECT * FROM ccreconjb_rec WHERE jbstatus = 's';
+SELECT * FROM ccreconjb_rec WHERE jbstatus = 'I';
+SELECT * FROM ccreconjb_rec WHERE jbstatus = 'EYE';
+SELECT * FROM ccreconjb_rec WHERE jbstatus = 'AR';
+SELECT * FROM ccreconjb_rec WHERE jbstatus = 'ar';
+SELECT * FROM ccreconjb_rec WHERE jbimprt_date >= DATE('2015-12-21')
 
 /* reset */
 UPDATE
