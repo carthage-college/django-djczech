@@ -74,7 +74,7 @@
     {% include "includes/required_text.html" %}
     {% include "includes/errors_text.html" %}
     <form method="post" action="{% url 'cheque_data' %}?uid={{uid}}"
-        enctype="multipart/form-data" class="form" id="profile">
+        enctype="multipart/form-data" class="form" id="profile" title="{{earl}}">
     {% csrf_token %}
     {% for hidden in form.hidden_fields %}
     {{ hidden }}
@@ -90,53 +90,53 @@
     </form>
 </div>
 <div class="column2 large-4 medium-6 small-12">
-    <h2>Stats</h2>
-    <dl>
-        <dt>Imported checks</dt>
-        <dd>{{cheques|length}}</dd>
-        <dt>Checks that failed to import</dt>
-        <dd>{{fail|length}}
-    </dl>
     {% if django_debug %}
         <h2>Earl</h2>
         {{earl}}
         <br>
-        {% if data %}
-            {% if data.select_voidb %}
-                <h2 title="SELECT_VOID_B">Voided checks</h2>
-                {% with objs=data.select_voidb %}
-                    {% include "dashboard/cheque/select_void_b.inc.html" %}
-                {% endwith %}
-            {% endif %}
-            {% if data.select_records_for_update %}
-                <h2 title="SELECT_RECORDS_FOR_UPDATE">
-                    Checks selected for update
-                </h2>
-                {% with objs=data.select_records_for_update %}
-                    {% include "dashboard/cheque/data.inc.html" %}
-                {% endwith %}
-            {% endif %}
-            {% if data.select_duplicates_2 %}
-                <h2 title="SELECT_DUPLICATES_2">Duplicate checks</h2>
-                {% with objs=data.select_duplicates_2 %}
-                    {% include "dashboard/cheque/data.inc.html" %}
-                {% endwith %}
-            {% endif %}
-            {% if data.select_reconciled %}
-                <h2 title="SELECT_RECONCILIATED">Reconciled checks</h2>
-                {% with objs=data.select_reconciled %}
-                    {% include "dashboard/cheque/data.inc.html" %}
-                {% endwith %}
-            {% endif %}
-            {% if data.select_remaining_eye %}
-                <h2 title="SELECT_REMAINING_EYE">
-                    Checks whose status has not changed during
-                    reconciliation process
-                </h2>
-                {% with objs=data.select_remaining_eye %}
-                    {% include "dashboard/cheque/data.inc.html" %}
-                {% endwith %}
-            {% endif %}
+    {% endif %}
+    {% if data %}
+        <h2>Stats</h2>
+        <dl>
+            <dt>Imported checks</dt>
+            <dd>{{cheques|length}}</dd>
+            <dt>Checks that failed to import</dt>
+            <dd>{{fail|length}}
+        </dl>
+        {% if data.select_voidb %}
+            <h2 title="SELECT_VOID_B">Voided checks</h2>
+            {% with objs=data.select_voidb %}
+                {% include "dashboard/cheque/select_void_b.inc.html" %}
+            {% endwith %}
+        {% endif %}
+        {% if data.select_records_for_update %}
+            <h2 title="SELECT_RECORDS_FOR_UPDATE">
+                Checks selected for update
+            </h2>
+            {% with objs=data.select_records_for_update %}
+                {% include "dashboard/cheque/data.inc.html" %}
+            {% endwith %}
+        {% endif %}
+        {% if data.select_duplicates_2 %}
+            <h2 title="SELECT_DUPLICATES_2">Duplicate checks</h2>
+            {% with objs=data.select_duplicates_2 %}
+                {% include "dashboard/cheque/data.inc.html" %}
+            {% endwith %}
+        {% endif %}
+        {% if data.select_reconciled %}
+            <h2 title="SELECT_RECONCILIATED">Reconciled checks</h2>
+            {% with objs=data.select_reconciled %}
+                {% include "dashboard/cheque/data.inc.html" %}
+            {% endwith %}
+        {% endif %}
+        {% if data.select_remaining_eye %}
+            <h2 title="SELECT_REMAINING_EYE">
+                Checks whose status has not changed during
+                reconciliation process
+            </h2>
+            {% with objs=data.select_remaining_eye %}
+                {% include "dashboard/cheque/data.inc.html" %}
+            {% endwith %}
         {% endif %}
     {% endif %}
 </div>
