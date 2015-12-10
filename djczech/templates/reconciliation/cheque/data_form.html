@@ -90,12 +90,7 @@
     </form>
 </div>
 <div class="column2 large-4 medium-6 small-12">
-    {% if django_debug %}
-        <h2>Earl</h2>
-        {{earl}}
-        <br>
-    {% endif %}
-    {% if data %}
+    {% if cheques %}
         <h2>Stats</h2>
         <dl>
             <dt>Imported checks</dt>
@@ -103,6 +98,8 @@
             <dt>Checks that failed to import</dt>
             <dd>{{fail|length}}
         </dl>
+    {% endif %}
+    {% if data %}
         {% if data.select_voidb %}
             <h2 title="SELECT_VOID_B">Voided checks</h2>
             {% with objs=data.select_voidb %}
