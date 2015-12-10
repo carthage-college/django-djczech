@@ -296,9 +296,9 @@ AND
 AND
     ccreconjb_rec.jbamountlnk = gltr_rec.amt
 AND
-    ccreconjb_rec.jbstatus NOT IN("S","AR","er","mr")
+    ccreconjb_rec.jbstatus NOT IN("S",'s',"AR",'ar',"er","mr")
 AND
-    gltr_rec.recon_stat NOT IN("R","V")
+    gltr_rec.recon_stat NOT IN("R",'r',"V",'v')
 AND
     ccreconjb_rec.jbimprt_date >= DATE('2015-12-21')
 ORDER BY
