@@ -358,6 +358,7 @@ def main():
         for o in objs:
             print o
 
+    session.commit()
     session.close()
 
     # end time
