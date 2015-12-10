@@ -9,7 +9,7 @@ class ChequeDataForm(forms.Form):
     import_date = forms.DateField()
     bank_data = forms.FileField(
         max_length = "768",
-        validators=[MimetypeValidator('text/csv')],
+        validators=[MimetypeValidator('text/plain')],
         help_text = '<p>File format: .csv file</p>'
     )
 
