@@ -34,6 +34,7 @@ def cheque_data(request):
     data = None
     cheques = []
     fail = []
+    uid = request.GET.get("uid")
     if request.method=='POST':
         form = ChequeDataForm(request.POST, request.FILES)
         if form.is_valid():
@@ -128,7 +129,7 @@ def cheque_data(request):
         form = ChequeDataForm()
     return render_to_response(
         "reconciliation/cheque/data_form.html", {
-            "form":form,"earl":EARL
+            "form":form,"earl":EARL,"uid":uid
         },
         context_instance=RequestContext(request)
     )

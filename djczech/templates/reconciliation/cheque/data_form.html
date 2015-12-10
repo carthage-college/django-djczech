@@ -71,7 +71,23 @@
 {% endblock %}
 {% block content %}
 <div class="forms-container large-8 medium-10 small-12">
-    {% include "includes/generic_form_multi.html" %}
+    {% include "includes/required_text.html" %}
+    {% include "includes/errors_text.html" %}
+    <form method="post" action="{% url 'cheque_data' %}?uid={{uid}}"
+        enctype="multipart/form-data" class="form" id="profile">
+    {% csrf_token %}
+    {% for hidden in form.hidden_fields %}
+    {{ hidden }}
+    {% endfor %}
+    <fieldset class="blockLabels">
+        <ol>
+            {% for field in form.visible_fields %}
+                {% include "form_field.inc.html" %}
+            {% endfor %}
+        </ol>
+    </fieldset>
+    {% include "form_submit.inc.html" %}
+    </form>
 </div>
 <div class="column2 large-4 medium-6 small-12">
     <h2>Stats</h2>
@@ -95,7 +111,6 @@
             {% if data.select_records_for_update %}
                 <h2 title="SELECT_RECORDS_FOR_UPDATE">
                     Checks selected for update
-                    "{{data.select_records_for_update}}"
                 </h2>
                 {% with objs=data.select_records_for_update %}
                     {% include "dashboard/cheque/data.inc.html" %}
