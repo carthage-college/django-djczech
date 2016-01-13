@@ -3,6 +3,7 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.contrib.admin.views.decorators import staff_member_required
 
 from djczech.reconciliation.data.models import Cheque
 from djczech.reconciliation.forms import ChequeDataForm
@@ -24,19 +25,9 @@ import csv
 
 EARL = settings.INFORMIX_EARL
 
-def portal_auth_required(uid, group):
-
-    uid = get_userid(request.GET.get('uid'))
-    try:
-        user = User.objects.get(pk=uid)
-    except:
-        return HttpResponseRedirect(resolved_redirect_url)
-    if group:
-        if not in_group(user, group) and not user.is_superuser:
-            return HttpResponseRedirect(resolved_redirect_url)
-    return True
 
 #@portal_auth_required("BusinessOfficeAdmin", reverse_lazy("access_denied"))
+@staff_member_required
 def cheque_data(request):
     """
     Form that allows the user to upload bank data in CSV format
@@ -150,6 +141,8 @@ def cheque_data(request):
         context_instance=RequestContext(request)
     )
 
+
+@staff_member_required
 def cheque_detail(request, cid=None):
     if not cid:
         # search POST
@@ -174,6 +167,7 @@ def cheque_detail(request, cid=None):
     )
 
 
+@staff_member_required
 def cheque_ajax(request):
     # database connection
     engine = create_engine(EARL)
@@ -205,6 +199,8 @@ def cheque_ajax(request):
     session.close()
     return JsonResponse(table.json())
 
+
+@staff_member_required
 def cheque_list(request):
     # database connection
     engine = create_engine(EARL)
