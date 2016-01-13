@@ -70,71 +70,92 @@
     </script>
 {% endblock %}
 {% block content %}
-<div class="forms-container large-8 medium-10 small-12">
-    {% include "includes/required_text.html" %}
-    {% include "includes/errors_text.html" %}
-    <form method="post" action="{% url 'cheque_data' %}?uid={{uid}}"
-        enctype="multipart/form-data" class="form" id="profile" title="{{earl}}">
-    {% csrf_token %}
-    {% for hidden in form.hidden_fields %}
-    {{ hidden }}
-    {% endfor %}
-    <fieldset class="blockLabels">
-        <ol>
-            {% for field in form.visible_fields %}
-                {% include "form_field.inc.html" %}
+<div class="row">
+    <div class="col-lg-12">
+        <h1>
+            Check Data Import
+            <small>
+                <span class="minor">Lavener rows are exceptions</span>
+                <!-- <i class="fa fa-star green"></i> = Star -->
+            </small>
+        </h1>
+    </div>
+    <!-- /.col-lg-12 -->
+</div>
+<!-- /.row -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="forms-container large-8 medium-10 small-12">
+            {% include "includes/required_text.html" %}
+            {% include "includes/errors_text.html" %}
+            <form method="post" action="{% url 'cheque_data' %}?uid={{uid}}"
+                enctype="multipart/form-data" class="form" id="profile" title="{{earl}}">
+            {% csrf_token %}
+            {% for hidden in form.hidden_fields %}
+            {{ hidden }}
             {% endfor %}
-        </ol>
-    </fieldset>
-    {% include "form_submit.inc.html" %}
-    </form>
+            <fieldset class="blockLabels">
+                <ol>
+                    {% for field in form.visible_fields %}
+                        {% include "form_field.inc.html" %}
+                    {% endfor %}
+                </ol>
+            </fieldset>
+            {% include "form_submit.inc.html" %}
+            </form>
+        </div>
+        <!-- /.forms-container -->
+        <div class="column2 large-4 medium-6 small-12">
+            {% if cheques %}
+                <h2>Stats</h2>
+                <dl>
+                    <dt>Imported checks</dt>
+                    <dd>{{cheques|length}}</dd>
+                    <dt>Checks that failed to import</dt>
+                    <dd>{{fail|length}}
+                </dl>
+            {% endif %}
+            {% if data %}
+                {% if data.select_voidb %}
+                    <h2 title="SELECT_VOID_B">Voided checks</h2>
+                    {% with objs=data.select_voidb %}
+                        {% include "dashboard/cheque/select_void_b.inc.html" %}
+                    {% endwith %}
+                {% endif %}
+                {% if data.select_records_for_update %}
+                    <h2 title="SELECT_RECORDS_FOR_UPDATE">
+                        Checks selected for update
+                    </h2>
+                    {% with objs=data.select_records_for_update %}
+                        {% include "dashboard/cheque/data.inc.html" %}
+                    {% endwith %}
+                {% endif %}
+                {% if data.select_duplicates_2 %}
+                    <h2 title="SELECT_DUPLICATES_2">Duplicate checks</h2>
+                    {% with objs=data.select_duplicates_2 %}
+                        {% include "dashboard/cheque/data.inc.html" %}
+                    {% endwith %}
+                {% endif %}
+                {% if data.select_reconciled %}
+                    <h2 title="SELECT_RECONCILIATED">Reconciled checks</h2>
+                    {% with objs=data.select_reconciled %}
+                        {% include "dashboard/cheque/data.inc.html" %}
+                    {% endwith %}
+                {% endif %}
+                {% if data.select_remaining_eye %}
+                    <h2 title="SELECT_REMAINING_EYE">
+                        Checks whose status has not changed during
+                        reconciliation process
+                    </h2>
+                    {% with objs=data.select_remaining_eye %}
+                        {% include "dashboard/cheque/data.inc.html" %}
+                    {% endwith %}
+                {% endif %}
+            {% endif %}
+        </div>
+        <!-- /.column2 -->
+    </div>
+    <!-- /.col-lg-12 -->
 </div>
-<div class="column2 large-4 medium-6 small-12">
-    {% if cheques %}
-        <h2>Stats</h2>
-        <dl>
-            <dt>Imported checks</dt>
-            <dd>{{cheques|length}}</dd>
-            <dt>Checks that failed to import</dt>
-            <dd>{{fail|length}}
-        </dl>
-    {% endif %}
-    {% if data %}
-        {% if data.select_voidb %}
-            <h2 title="SELECT_VOID_B">Voided checks</h2>
-            {% with objs=data.select_voidb %}
-                {% include "dashboard/cheque/select_void_b.inc.html" %}
-            {% endwith %}
-        {% endif %}
-        {% if data.select_records_for_update %}
-            <h2 title="SELECT_RECORDS_FOR_UPDATE">
-                Checks selected for update
-            </h2>
-            {% with objs=data.select_records_for_update %}
-                {% include "dashboard/cheque/data.inc.html" %}
-            {% endwith %}
-        {% endif %}
-        {% if data.select_duplicates_2 %}
-            <h2 title="SELECT_DUPLICATES_2">Duplicate checks</h2>
-            {% with objs=data.select_duplicates_2 %}
-                {% include "dashboard/cheque/data.inc.html" %}
-            {% endwith %}
-        {% endif %}
-        {% if data.select_reconciled %}
-            <h2 title="SELECT_RECONCILIATED">Reconciled checks</h2>
-            {% with objs=data.select_reconciled %}
-                {% include "dashboard/cheque/data.inc.html" %}
-            {% endwith %}
-        {% endif %}
-        {% if data.select_remaining_eye %}
-            <h2 title="SELECT_REMAINING_EYE">
-                Checks whose status has not changed during
-                reconciliation process
-            </h2>
-            {% with objs=data.select_remaining_eye %}
-                {% include "dashboard/cheque/data.inc.html" %}
-            {% endwith %}
-        {% endif %}
-    {% endif %}
-</div>
+<!-- /.row -->
 {% endblock %}
