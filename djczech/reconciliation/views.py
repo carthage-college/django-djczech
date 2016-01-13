@@ -84,7 +84,7 @@ def cheque_data(request):
                 f = islice(open(phile, "r"), n, None)
 
             # read the CSV file
-            reader = csv.DictReader(f, fieldnames, delimiter='\t')
+            reader = csv.DictReader(f, fieldnames, delimiter=',')
 
             # for each line create a Cheque object
             for r in reader:
