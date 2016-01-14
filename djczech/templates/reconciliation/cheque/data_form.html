@@ -72,7 +72,7 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-12">
-        <h1>
+        <h1 title="{{earl}}">
             Check Data Import
             <small>
                 <span class="minor">Lavener rows are exceptions</span>
@@ -89,7 +89,7 @@
             {% include "includes/required_text.html" %}
             {% include "includes/errors_text.html" %}
             <form method="post" action="{% url 'cheque_data' %}?uid={{uid}}"
-                enctype="multipart/form-data" class="form" id="profile" title="{{earl}}">
+                enctype="multipart/form-data" class="form" id="profile">
             {% csrf_token %}
             {% for hidden in form.hidden_fields %}
             {{ hidden }}

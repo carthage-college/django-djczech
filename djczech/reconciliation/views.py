@@ -207,6 +207,7 @@ def cheque_list(request):
     Session = sessionmaker(bind=engine)
     session = Session()
     # query
+    #cheques = session.query(Cheque).filter_by(jbstatus=settings.AUTO_REC)
     cheques = session.query(Cheque).filter_by(jbstatus=settings.IMPORT_STATUS)
     #.order_by(desc(jbissue_date))
     #.limit(100)

@@ -47,8 +47,8 @@ position: relative;
     width: 80%;
 }
 @media (min-width: 768px) {
-    .navbar-static-side { width: 150px; }
-    #page-wrapper { margin: 0 0 0 150px; }
+    .navbar-static-side { width: 170px; }
+    #page-wrapper { margin: 0 0 0 170px; }
 }
 </style>
 {% endblock %}
@@ -104,27 +104,6 @@ $(function() {
             beforeSend: function(){
                 spinner.spin(target);
             }
-        },
-        drawCallback: function(settings) {
-            spinner.stop(target);
-            /* x-editable jquery plugin */
-            $.fn.editable.defaults.mode = 'inline';
-            $('.xeditable').editable({
-                url: "{% url 'set_val' %}",
-                emptytext: "Click to edit",
-                params: function (params) {
-                    params.model = $(this).attr("data-model");
-                    params.pk = $(this).attr("data-pk");
-                    return params
-                },
-                success: function(response, newValue) {
-                    if (response == "success") {
-                        $.growlUI('Success', "Data saved.");
-                    } else {
-                        $.growlUI('Error', response);
-                    }
-                }
-            });
         },
         columns: [
             {
@@ -221,22 +200,32 @@ $(function() {
     <div class="sidebar-collapse">
         <ul class="nav" id="side-menu">
             <li>
-                <a href="{# url 'dashboard_home' #}">
-                    <i class="fa fa-dashboard fa-fw"></i> Dashboard
+                <a href="{% url 'cheque_data' %}">
+                    <i class="fa fa-upload fa-fw"></i> Check Upload
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'cheque_matching' %}">
+                    <i class="fa fa-clone"></i> Check Matching
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'cheque_list' %}">
+                    <i class="fa fa-list"></i> Checks List
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class="fa fa-cogs"></i> Cognos Reports
                 </a>
             </li>
             {% if user.is_superuser %}
             <li>
                 <a href="{% url 'admin:index' %}">
-                    <i class="fa fa-gears"></i> Administration
+                    <i class="fa fa-tachometer"></i> Administration
                 </a>
             </li>
             {% endif %}
-            <li>
-                <a href="{# url 'home' #}">
-                    <i class="fa fa-edit"></i> Home
-                </a>
-            </li>
         </ul>
         <!-- /#side-menu -->
     </div>

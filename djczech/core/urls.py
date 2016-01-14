@@ -33,10 +33,11 @@ urlpatterns = patterns('',
         r'^accounts/$',
         RedirectView.as_view(url=reverse_lazy("auth_login"))
     ),
+    # admin
     url(
         r'^admin/', include(admin.site.urls)
     ),
-    # my app
+    # cheque requi
     url(
         r'^reconciliation/', include("djczech.reconciliation.urls")
     ),
@@ -53,15 +54,6 @@ urlpatterns = patterns('',
         TemplateView.as_view(
             template_name="reconciliation/denied.html"
         ), name="access_denied"
-    ),
-    # ajax post method to save various types characteristics to db and session
-    url(
-        r'^set-val/$', 'djczech.core.views.set_val', name="set_val"
-    ),
-    # override mobile first responsive UI
-    url(
-        r'^responsive/(?P<action>[-\w]+)/',
-        'responsive_switch', name="responsive_switch"
     ),
     # redirect
     url(

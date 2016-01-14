@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}
+    Cheque Matching &mdash; DJ Czech &mdash;
+    Carthage College
+{% endblock %}
+{% block extra_javascript %}
+    <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.2.2/underscore-min.js"></script>
+    <script src="{{media_url}}js/stupidtable.js"></script>
+    <script src="{{media_url}}js/jquery.jeditable.js"></script>
+    <script src="{{media_url}}js/check_matching.js"></script>
+{% endblock %}
+{% block extra_style %}
+    {{block.super}}
+    <link rel="stylesheet" type="text/css"
+        href="{{media_url}}css/check_matching.css">
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <h1>
+            Check Matching
+        </h1>
+    </div>
+    <!-- /.col-lg-12 -->
+</div>
+<!-- /.row -->
+<div class="row">
+    <div class="col-lg-12">
+        <div id="CarthagePanel"></div>
+        <div id="JohnsonPanel"></div>
+    </div>
+    <!-- /.col-lg-12 -->
+</div>
+<!-- /.row -->
+{% endblock %}

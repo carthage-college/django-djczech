@@ -2,20 +2,6 @@
 {% block extra_javascript %}
 <script>
     $(function() {
-        /* xeditable jquery plugin */
-        $.fn.editable.defaults.mode = 'inline';
-        $('.xeditable').editable({
-            url: "{% url 'set_val' %}",
-            emptytext: "Click to edit",
-            params: function (params) {
-                params.model = $(this).attr("data-model");
-                params.pk = $(this).attr("data-pk");
-                return params
-            },
-            success: function(response, newValue) {
-                $.growlUI('Success', "Data saved.");
-            }
-        });
     });
 </script>
 {% endblock %}

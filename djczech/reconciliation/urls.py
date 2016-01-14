@@ -33,4 +33,11 @@ urlpatterns = patterns('djczech.reconciliation.views',
         ),
         name='cheque_data_success'
     ),
+    url(
+        r'^cheque/matching/$',
+        TemplateView.as_view(
+            template_name='reconciliation/cheque/matching.html'
+        ),
+        name='cheque_matching'
+    ),
 )

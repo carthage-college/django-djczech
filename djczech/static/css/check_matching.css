@@ -1,0 +1,56 @@
+h2, h3, h4 {
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+  padding:0 0 0 5px;
+  margin:0 0 10px 0;
+}
+
+#page-wrapper{min-height:600;}
+.even td {background: #fff;white-space: nowrap;}
+.odd td {background: #eee;white-space: nowrap;}
+
+table, td {
+     border-spacing: 0;
+     border-collapse: separate;
+     padding: 5px;
+     font-size:12px;
+}
+
+#content {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  height:650px;
+}
+
+#CarthagePanel {
+  padding: 5px 0 0 5px;
+  background: #ffd;
+  width: 510px;
+  float:left;
+}
+
+#JohnsonPanel {
+  padding: 5px 0 0 5px;
+  background: #ddf;
+  width: 420px;
+  float:left;
+}
+
+#CarthageChecks, #JohnsonChecks {
+  height:600px;
+  overflow-y:auto;
+}
+
+tr.hovered td {
+  background: #aaa !important;
+}
+
+tr.ui-draggable-dragging td {
+  background: none !important;
+}
+
+tr:hover td {
+    background: #aaa;
+}
+
+.right { text-align:right;}
