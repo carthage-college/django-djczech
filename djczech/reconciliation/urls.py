@@ -7,36 +7,20 @@ admin.autodiscover()
 
 urlpatterns = patterns('djczech.reconciliation.views',
     url(
-        r'^cheque/(?P<cid>\d+)/detail/$',
-        'cheque_detail', name="cheque_detail"
-    ),
-    url(
-        r'^cheque/ajax/$',
-        'cheque_ajax', name="cheque_ajax"
-    ),
-    url(
-        r'^cheque/data/$',
+        r'^data/$',
         'cheque_data', name="cheque_data"
     ),
     url(
-        r'^cheque/list/$',
-        'cheque_list', name="cheque_list"
-    ),
-    url(
-        r'^cheque/search/$',
-        'cheque_detail', name="cheque_search"
-    ),
-    url(
-        r'^cheque/success/$',
+        r'^data/success/$',
         TemplateView.as_view(
-            template_name='reconciliation/cheque/success.html'
+            template_name='reconciliation/success.html'
         ),
         name='cheque_data_success'
     ),
     url(
-        r'^cheque/matching/$',
+        r'^matching/$',
         TemplateView.as_view(
-            template_name='reconciliation/cheque/matching.html'
+            template_name='reconciliation/matching.html'
         ),
         name='cheque_matching'
     ),

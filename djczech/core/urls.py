@@ -40,13 +40,29 @@ urlpatterns = patterns('',
     # cheque requi
     url(
         r'^reconciliation/', include("djczech.reconciliation.urls")
-    ),
-    # direct to template
+    )
+)
+
+urlpatterns += patterns('djczech.core.views',
+    # detailed view
     url(
-        r'^success/$',
-        TemplateView.as_view(
-            template_name="reconciliation/success.html"
-        )
+        r'^detail/(?P<cid>\d+)/$',
+        'cheque_detail', name="cheque_detail"
+    ),
+    # dynamically load data
+    url(
+        r'^ajax/$',
+        'cheque_ajax', name="cheque_ajax"
+    ),
+    # list cheques
+    url(
+        r'^list/$',
+        'cheque_list', name="cheque_list"
+    ),
+    # search
+    url(
+        r'^search/$',
+        'cheque_detail', name="cheque_search"
     ),
     # direct to template
     url(
@@ -57,6 +73,6 @@ urlpatterns = patterns('',
     ),
     # redirect
     url(
-        r'^$', RedirectView.as_view(url="/djczech/reconciliation/")
-    ),
+        r'^$', RedirectView.as_view(url="/djczech/reconciliation/data/")
+    )
 )

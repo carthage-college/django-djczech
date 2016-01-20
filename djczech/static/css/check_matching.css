@@ -4,7 +4,6 @@ h2, h3, h4 {
   margin:0 0 10px 0;
 }
 
-#page-wrapper{min-height:600;}
 .even td {background: #fff;white-space: nowrap;}
 .odd td {background: #eee;white-space: nowrap;}
 

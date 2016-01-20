@@ -2,7 +2,7 @@
 
 from django import forms
 
-from djtools.fields.validators import MimetypeValidator
+#from djtools.fields.validators import MimetypeValidator
 
 #validators=[MimetypeValidator('text/csv')],
 

@@ -1,5 +1,5 @@
 <div class="table-responsive">
-    <table class="table table-striped table-bordered table-hover cheques-data">
+    <table class="table table-striped table-bordered table-hover dataTable" id="cheques-data">
         <thead>
             <tr>
                 <th>Check #</th>
@@ -16,7 +16,9 @@
         <tbody>
         {% for o in objs %}
             <tr>
-            <td>{{o.jbchkno}}</td>
+            <td>
+                <a href="{% url 'cheque_detail' o.jbchkno %}">{{o.jbchkno}}</a>
+            </td>
             <td>{{o.jbchknolnk}}</td>
             <td>{{o.jbstatus}}</td>
             <td>{{o.jbstatus_date}}</td>

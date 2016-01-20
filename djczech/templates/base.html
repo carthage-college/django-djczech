@@ -46,8 +46,14 @@ position: relative;
 .input-group .form-control {
     width: 80%;
 }
+table.dataTable > tbody > tr:hover > td.minor { background-color: #ccf; }
+table.dataTable > tbody > tr:nth-child(2n+1) > td.minor { background-color: #ccf; }
+table.dataTable > tbody tr.selected { background-color: #b0bed9 !important; }
+table.dataTable > tbody tr:nth-child(even):hover td{ background-color: #fae7b5 !important; }
+table.dataTable > tbody tr:nth-child(odd):hover td { background-color: #fae7b5 !important; }
+
+.navbar-static-side { width: 170px; }
 @media (min-width: 768px) {
-    .navbar-static-side { width: 170px; }
     #page-wrapper { margin: 0 0 0 170px; }
 }
 </style>
@@ -113,6 +119,12 @@ $(function() {
                 }
             },
             {
+                "data": "jbchknolnk",
+                "render": function(data, type, row){
+                    return $("<div>").append($("<a/>").attr("href", row.DT_RowData.link).text(data)).html();
+                }
+            },
+            {
                 "data": "jbstatus",
                 "render": function(data, type, row){
                     $ren = $("<div>").append('<a data-name="jbstatus" href="#" data-pk="' + row.DT_RowData.pk + '" data-model="Cheque" class="xeditable">' + data + '</a>').html();
@@ -121,36 +133,20 @@ $(function() {
             },
             { "data": "jbstatus_date" },
             { "data": "jbimprt_date" },
-            {
-                "data": "jbaction",
-                "render": function(data, type, row){
-                    $ren = $("<div>").append('<a data-name="jbaction" href="#" data-pk="' + row.DT_RowData.pk + '" data-model="Cheque" class="xeditable">' + data + '</a>').html();
-                    return $ren;
-                }
-            },
             { "data": "jbaccount" },
             { "data": "jbamount" },
-            { "data": "jbissue_date"},
-            {
-                "data": "jbpostd_dat",
-                "render": function(data, type, row){
-                    $ren = $("<div>").append('<a data-name="jbpostd_dat" href="#" data-pk="' + row.DT_RowData.pk + '" data-model="Cheque" class="xeditable">' + data + '</a>').html();
-                    return $ren;
-                }
-            },
+            { "data": "jbamountlnk" },
             {
                 "data": "jbpayee",
                 "render": function(data, type, row){
                     $ren = $("<div>").append('<a data-name="jbpayee" href="#" data-pk="' + row.DT_RowData.pk + '" data-model="Cheque" class="xeditable">' + data + '</a>').html();
                     return $ren;
                 }
-            },
-            { "data": "jbseqno" }
+            }
         ],
-        //"order": [[ 0, "asc" ]],
         "lengthMenu": [
             [100, 250, 500, 1000, 2000, -1],
-            [100, 250, 500, 1000, 2000, "All"]
+            [100, 250, 500, 1000, 2000]
         ]
     });
 });
@@ -165,16 +161,11 @@ $(function() {
 });
 </script>
 {% endblock %}
-{% block navbar-header %}
-<div class="navbar-header">
-    <a href="/">
-        <img src="https://www.carthage.edu/themes/korra/assets/images/carthage-logo-main.png" height="50">
-    </a>
+{% block navbar-header-department %}
     <a class="navbar-brand"
         href="http://www.carthage.edu/business-services/">
         Business Services
     </a>
-</div>
 {% endblock %}
 {% block navbar-top-links %}
 <ul class="nav navbar-top-links navbar-right">
