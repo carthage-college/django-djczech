@@ -46,7 +46,7 @@ urlpatterns = patterns('',
 urlpatterns += patterns('djczech.core.views',
     # detailed view
     url(
-        r'^detail/(?P<cid>\d+)/$',
+        r'^detail/(?P<sid>\d+)/$',
         'cheque_detail', name="cheque_detail"
     ),
     # dynamically load data
@@ -59,16 +59,11 @@ urlpatterns += patterns('djczech.core.views',
         r'^list/$',
         'cheque_list', name="cheque_list"
     ),
-    # search
-    url(
-        r'^search/$',
-        'cheque_detail', name="cheque_search"
-    ),
     # direct to template
     url(
         r'^denied/$',
         TemplateView.as_view(
-            template_name="reconciliation/denied.html"
+            template_name="denied.html"
         ), name="access_denied"
     ),
     # redirect
