@@ -68,6 +68,6 @@ urlpatterns += patterns('djczech.core.views',
     ),
     # redirect
     url(
-        r'^$', RedirectView.as_view(url="/djczech/reconciliation/data/")
+        r'^$', RedirectView.as_view(url=reverse_lazy("cheque_data"))
     )
 )
