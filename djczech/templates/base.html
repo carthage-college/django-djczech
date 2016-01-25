@@ -31,6 +31,7 @@ dl dt {
 dl dd {
     margin: 2px 0 2px 5px;
 }
+.dashintro {padding-top:20px;}
 .green { font-weight:bold; color:green; }
 .table-hover > tbody > tr:hover > td.minor { background-color: #ccf; }
 .table-striped > tbody > tr:nth-child(2n+1) > td.minor {
@@ -51,6 +52,20 @@ table.dataTable > tbody > tr:nth-child(2n+1) > td.minor { background-color: #ccf
 table.dataTable > tbody tr.selected { background-color: #b0bed9 !important; }
 table.dataTable > tbody tr:nth-child(even):hover td{ background-color: #fae7b5 !important; }
 table.dataTable > tbody tr:nth-child(odd):hover td { background-color: #fae7b5 !important; }
+
+.dataTables_wrapper .dataTables_paginate {
+    padding-top: 0;
+}
+.dataTables_wrapper .pagination {
+    margin: 0;
+}
+.dataTables_wrapper .dataTables_length {
+    padding-left: 0.755em;
+    padding-top: 0.755em;
+}
+.dataTables_wrapper .dataTables_info {
+    padding-top: 1.11em;
+}
 
 .navbar-static-side { width: 170px; }
 @media (min-width: 768px) {
@@ -104,53 +119,45 @@ $(function() {
     var table = $('#cheques-data').dataTable({
         serverSide: true,
         filter: false,
+        dom: '<"top"iflp<"clear">>rt<"bottom"iflp<"clear">>',
         processing: true,
         ajax: {
+            type: "{{request.method}}",
+            {% if status %}
+            data: {"status":"{{status}}"},
+            {% endif %}
             url: "{% url 'cheque_ajax' %}",
             beforeSend: function(){
                 spinner.spin(target);
             }
         },
+        drawCallback: function(settings) {
+            spinner.stop(target);
+        },
         columns: [
             {
                 "data": "jbchkno",
                 "render": function(data, type, row){
-                    return $("<div>").append($("<a/>").attr("href", row.DT_RowData.link).text(data)).html();
+                    return $("<div>").append($("<a/>").attr("href", "/djczech/detail/" + row.jbseqno + "/").text(data)).html();
                 }
             },
-            {
-                "data": "jbchknolnk",
-                "render": function(data, type, row){
-                    return $("<div>").append($("<a/>").attr("href", row.DT_RowData.link).text(data)).html();
-                }
-            },
-            {
-                "data": "jbstatus",
-                "render": function(data, type, row){
-                    $ren = $("<div>").append('<a data-name="jbstatus" href="#" data-pk="' + row.DT_RowData.pk + '" data-model="Cheque" class="xeditable">' + data + '</a>').html();
-                    return $ren;
-                }
-            },
+            { "data": "jbchknolnk" },
+            { "data": "jbstatus" },
             { "data": "jbstatus_date" },
             { "data": "jbimprt_date" },
             { "data": "jbaccount" },
             { "data": "jbamount" },
             { "data": "jbamountlnk" },
-            {
-                "data": "jbpayee",
-                "render": function(data, type, row){
-                    $ren = $("<div>").append('<a data-name="jbpayee" href="#" data-pk="' + row.DT_RowData.pk + '" data-model="Cheque" class="xeditable">' + data + '</a>').html();
-                    return $ren;
-                }
-            }
+            { "data": "jbpayee" }
         ],
         "lengthMenu": [
             [100, 250, 500, 1000, 2000, -1],
             [100, 250, 500, 1000, 2000]
         ]
     });
-});
-$(function() {
+    $("select[name='status']").change(function() {
+        $('#cheques-toggle').submit();
+    });
     $(".required > input").addClass("required");
     $(".required > select").addClass("required");
     $(".required > textarea").addClass("required");
@@ -177,9 +184,15 @@ $(function() {
         <ul class="dropdown-menu">
             <li class="divider"></li>
             <li>
-                <a href="{% url 'auth_logout' %}">
-                    <i class="fa fa-power-off"></i> Log Out
+                {% if user.is_anonymous %}
+                <a href="{% url 'auth_login' %}">
+                    <i class="fa fa-sign-in"></i> Sign In
                 </a>
+                {% else %}
+                <a href="{% url 'auth_logout' %}">
+                    <i class="fa fa-sign-out"></i> Sign Out
+                </a>
+                {% endif %}
             </li>
         </ul>
     </li>

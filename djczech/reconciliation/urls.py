@@ -9,10 +9,6 @@ admin.autodiscover()
 
 urlpatterns = patterns('djczech.reconciliation.views',
     url(
-        r'^data/$',
-        'cheque_data', name="cheque_data"
-    ),
-    url(
         r'^data/success/$',
         TemplateView.as_view(
             template_name='reconciliation/success.html'
@@ -20,10 +16,11 @@ urlpatterns = patterns('djczech.reconciliation.views',
         name='cheque_data_success'
     ),
     url(
+        r'^data/$',
+        'cheque_data', name="cheque_data"
+    ),
+    url(
         r'^matching/$',
-        group_required(lambda u: 'BusinessOfficeFinance')(TemplateView.as_view(
-            template_name='reconciliation/matching.html'
-        )),
-        name='cheque_matching'
+        'cheque_matching', name='cheque_matching'
     ),
 )

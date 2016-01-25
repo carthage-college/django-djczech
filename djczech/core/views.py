@@ -3,11 +3,10 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.contrib.admin.views.decorators import staff_member_required
 
 from djczech.reconciliation.data.models import Cheque
 
-from djtools.decorators.auth import group_required, portal_auth_required
+from djtools.decorators.auth import portal_auth_required
 
 from sqlalchemy import desc
 from sqlalchemy import create_engine
@@ -24,23 +23,14 @@ logger = logging.getLogger(__name__)
 
 EARL = settings.INFORMIX_EARL
 
-#@group_required()
-@staff_member_required
-def cheque_detail(request, cid=None):
-    if not cid:
-        # search POST
-        try:
-            cid = request.POST["cid"]
-        except:
-            return HttpResponseRedirect(
-                reverse_lazy("cheque_list")
-            )
+@portal_auth_required("BusinessOfficeFinance", reverse_lazy("access_denied"))
+def cheque_detail(request, sid=None):
 
     # database connection
     engine = create_engine(EARL)
     Session = sessionmaker(bind=engine)
     session = Session()
-    cheque = session.query(Cheque).get(cid)
+    cheque = session.query(Cheque).filter_by(jbseqno=sid).one()
     session.close()
 
     return render_to_response(
@@ -50,8 +40,7 @@ def cheque_detail(request, cid=None):
     )
 
 
-#@group_required()
-#@staff_member_required
+@portal_auth_required("BusinessOfficeFinance", reverse_lazy("access_denied"))
 def cheque_ajax(request):
     # database connection
     engine = create_engine(EARL)
@@ -60,10 +49,15 @@ def cheque_ajax(request):
     # query
     #cheques = session.query(Cheque).order_by(desc(jbissue_date)).limit(length)
     #cheques = session.query(Cheque).order_by(desc(Cheque.jbissue_date))
-    #cheques = session.query(Cheque)
-    cheques = session.query(Cheque).filter_by(jbstatus="I")
     # datatable
-    table = DataTable(request.GET, Cheque, cheques, [
+    recci = request.GET
+    status = "I"
+    if request.POST:
+        status = request.POST.get("status")
+        recci = request.POST
+    cheques = session.query(Cheque).filter_by(jbstatus=status)
+    table = DataTable(recci, Cheque, cheques, [
+        "jbseqno",
         "jbchkno",
         "jbchknolnk",
         "jbstatus",
@@ -79,27 +73,26 @@ def cheque_ajax(request):
     table.add_data(pk=lambda o: o.jbchkno)
     #table.searchable(lambda queryset, user_input: cheque_search(queryset, user_input))
     session.close()
-    logger.debug("table.json() = {}".format(table.json()))
-    return JsonResponse(table.json(), safe=False)
-    #return HttpResponse(table.json(), content_type='application/json')
+    jason = table.json()
+    #logger.debug("table.json() = {}".format(jason))
+    # DT_RowData dictionary contains a key named "link", which is
+    # a proxy object and JsonResponse() barfs on it, so we remove it
+    for check in jason.get("data"):
+        check.pop("DT_RowData", None)
+    return JsonResponse(jason, safe=False)
 
-#@group_required()
-@staff_member_required
+@portal_auth_required("BusinessOfficeFinance", reverse_lazy("access_denied"))
 def cheque_list(request):
-    # database connection
-    engine = create_engine(EARL)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    # query
-    #cheques = session.query(Cheque).filter_by(jbstatus=settings.AUTO_REC)
-    #cheques = session.query(Cheque).filter_by(jbstatus=settings.IMPORT_STATUS)
-    cheques = session.query(Cheque).filter_by(jbstatus="I")
-    #.order_by(desc(jbissue_date))
-    #.limit(100)
-    session.close()
-
     return render_to_response(
-        "list.html",
-        {"objs": cheques},
+        "list.html", {
+            "status": request.POST.get("status"),
+            "codes": [
+                settings.IMPORT_STATUS,
+                settings.AUTO_REC,
+                settings.REQUI_RICH,
+                settings.SUSPICIOUS,
+                settings.REQUI_VICH
+            ]
+        },
         context_instance=RequestContext(request)
     )

@@ -8,7 +8,7 @@ from djczech.reconciliation.data.models import Cheque
 from djczech.reconciliation.forms import ChequeDataForm
 from djczech.reconciliation.utils import handle_uploaded_file, recce_cheques
 
-from djtools.decorators.auth import group_required, portal_auth_required
+from djtools.decorators.auth import portal_auth_required
 
 from sqlalchemy import exc
 from sqlalchemy import create_engine
@@ -23,9 +23,7 @@ import csv
 EARL = settings.INFORMIX_EARL
 
 
-#@portal_auth_required("BusinessOfficeAdmin", reverse_lazy("access_denied"))
-#@group_required()
-@staff_member_required
+@portal_auth_required("BusinessOfficeFinance", reverse_lazy("access_denied"))
 def cheque_data(request):
     """
     Form that allows the user to upload bank data in CSV format
@@ -139,3 +137,9 @@ def cheque_data(request):
         context_instance=RequestContext(request)
     )
 
+@portal_auth_required("BusinessOfficeFinance", reverse_lazy("access_denied"))
+def cheque_matching(request):
+    return render_to_response(
+        'reconciliation/matching.html',
+        context_instance=RequestContext(request)
+    )

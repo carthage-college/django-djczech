@@ -1,0 +1,24 @@
+<ul>
+    <li>
+        <a href="https://www.carthage.edu/djczech/reconciliation/data/?uid="
+            class="djczech" target="_blank">Check Upload</a>
+    </li>
+    <li>
+        <a href="https://www.carthage.edu/djczech/reconciliation/matching/?uid="
+            class="djczech" target="_blank">Check Matching</a>
+    </li>
+    <li>
+        <a href="https://www.carthage.edu/djczech/list/?uid="
+            class="djczech" target="_blank">Checks List</a>
+    </li>
+    <li>
+        <a href="#">Cognos Reports</a>
+    </li>
+</ul>
+
+<script>
+$("a.djczech").each(function() {
+   var _href = $(this).attr("href"); 
+   $(this).attr("href", _href + window.Portal["uid"]);
+});
+</script>

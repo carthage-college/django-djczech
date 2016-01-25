@@ -16,16 +16,19 @@
         <div class="col-lg-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <form id="cheques-toggle" class="form-inline"
+                    <form id="cheques-toggle" class="form-inline" method="post"
                         role="form">
                         {% csrf_token %}
                         <div class="form-group">
-                            <label>Only show</label>
-                            <select name="class" class="form-control">
+                            <label>Show checks with status</label>
+                            <select name="status" class="form-control">
+                                {% for c in codes %}
+                                    <option value="{{c}}"
+                                        {% if c == status %}selected{% endif %}>
+                                        {{c}}
+                                    </option>
+                                {% endfor %}
                             </select>
-                            <input type="submit" name="submit"
-                                value="submit" id="submit-toggle"
-                                class="btn btn-primary" />
                         </div>
                     </form>
                 </div>
