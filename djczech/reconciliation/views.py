@@ -116,7 +116,7 @@ def cheque_data(request):
             data = recce_cheques(request, session, import_date)
 
             # commit the reconciliation updates
-            #session.commit()
+            session.commit()
 
             rsvp = render_to_response(
                 "reconciliation/data_form.html", {
