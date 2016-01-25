@@ -110,13 +110,7 @@ $(function() {
     var spinner = new Spinner(opts).spin(target);
     spinner.stop(target);
 
-    /*  Initialise the DataTables:
-        we assign it to variable 'table' so that we can use it for
-        the 'on change' event handler below. if we do not do it this
-        way, then the 'on change' event does not work for items after
-        page 1 or for items returned by search.
-    */
-    var table = $('#cheques-data').dataTable({
+    var table = $('.cheques-data').dataTable({
         serverSide: true,
         filter: false,
         dom: '<"top"iflp<"clear">>rt<"bottom"iflp<"clear">>',
