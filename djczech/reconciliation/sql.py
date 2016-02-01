@@ -312,3 +312,61 @@ SELECT_RECONCILIATED = """
 SELECT_REMAINING_EYE = """
     SELECT * FROM ccreconjb_rec where jbstatus = '{}'
 """.format(STATUS)
+
+"""
+Check Matching SQL incantations
+"""
+
+MATCHING_CARTHAGE_CHEQUES = """
+    SELECT gle_rec.doc_no as check_number, gltr_rec.amt as amount,
+        trim(id_rec.fullname) as fullname,
+        TO_CHAR(vch_rec.pst_date,'%Y-%m-%d') as post_date
+    FROM
+        vch_rec, gle_rec, gltr_rec, id_rec
+    WHERE
+        vch_rec.vch_ref = gle_rec.jrnl_ref
+    AND vch_rec.jrnl_no = gle_rec.jrnl_no
+    AND vch_rec.vch_ref = "CK"
+    AND gle_rec.doc_id = id_rec.id
+    AND gle_rec.jrnl_ref = gltr_rec.jrnl_ref
+    AND gle_rec.jrnl_no = gltr_rec.jrnl_no
+    AND gle_rec.gle_no = gltr_rec.ent_no
+    AND (gltr_rec.recon_stat != "r" AND gltr_rec.recon_stat != "v")
+    AND gltr_rec.stat = "P"
+    ORDER BY
+        check_number DESC
+"""
+
+MATCHING_JOHNSON_CHEQUES = """
+   SELECT
+        jbchkno as check_number, jbamount as amount, jbaction,
+        jbstatus, TO_CHAR(jbstatus_date,'%Y-%m-%d') as cleared_date,
+        jbpayee, jbaccount, jbseqno
+   FROM
+        ccreconjb_rec
+   WHERE
+        (jbstatus = "I" OR jbstatus = "s")
+   AND
+        jbimprt_date > "{}"
+   ORDER BY check_number DESC
+""".format(settings.IMPORT_DATE_FIRST)
+
+MATCHING_UPDATE_GLTR_REC = """
+    UPDATE
+        gltr_rec
+    SET
+        recon_stat = "r"
+    WHERE gltr_no in (
+        SELECT gltr_rec.gltr_no
+        FROM vch_rec, gle_rec, gltr_rec
+        WHERE vch_rec.vch_ref = gle_rec.jrnl_ref
+          AND vch_rec.jrnl_no = gle_rec.jrnl_no
+          AND vch_rec.vch_ref = "CK"
+          AND gle_rec.jrnl_ref = gltr_rec.jrnl_ref
+          AND gle_rec.jrnl_no = gltr_rec.jrnl_no
+          AND gle_rec.gle_no = gltr_rec.ent_no
+          AND gltr_rec.stat = "P"
+          AND gle_rec.doc_no = {CarthageNumber}
+    )
+""".format
+
