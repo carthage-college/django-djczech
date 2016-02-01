@@ -23,4 +23,8 @@ urlpatterns = patterns('djczech.reconciliation.views',
         r'^matching/$',
         'cheque_matching', name='cheque_matching'
     ),
+    url(
+        r'^matching/ajax/$',
+        'cheque_matching_ajax', name='cheque_matching_ajax'
+    ),
 )
