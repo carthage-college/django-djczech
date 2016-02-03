@@ -174,11 +174,11 @@ def cheque_matching(request):
     )
 
 
-#@csrf_exempt
-#@portal_auth_required(
-#    "BusinessOfficeFinance",
-#    "BusinessOfficeFinance", reverse_lazy("access_denied")
-#)
+@csrf_exempt
+@portal_auth_required(
+    "BusinessOfficeFinance",
+    "BusinessOfficeFinance", reverse_lazy("access_denied")
+)
 def cheque_matching_ajax(request):
 
     sql=None
@@ -221,8 +221,8 @@ def cheque_matching_ajax(request):
                 sql = MATCHING_UPDATE_GLTR_REC(CarthageNumber=doc_no)
                 logger.debug("update gltr_rec sql: {}".format(sql))
                 session.execute(sql)
-                #session.flush()
-                #session.commit()
+                session.flush()
+                session.commit()
         except:
             cheque = None
 
