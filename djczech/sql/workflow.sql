@@ -359,7 +359,7 @@ IN  (
         SELECT
             tmp_reconupdta.jbseqno
         FROM
-            tmp_reconupdta    
+            tmp_reconupdta
     )
 AND
     ccreconjb_rec.jbstatus = 'EYE';
@@ -378,7 +378,7 @@ IN  (
         SELECT
             tmp_reconupdta.jbseqno
         FROM
-            tmp_reconupdta    
+            tmp_reconupdta
     )
 AND
     ccreconjb_rec.jbstatus = 'I';
@@ -392,6 +392,11 @@ FROM
     tmp_reconupdta
 ORDER BY
     tmp_reconupdta.cknodoc_no;
+
+/* Display any left over imported checks whose status has not changed */
+SELECT_REMAINING_EYE = """
+    SELECT * FROM ccreconjb_rec where jbstatus = '{}'
+"""
 
 /* TEST */
 SELECT * FROM gltr_rec WHERE recon_stat = 'O';
