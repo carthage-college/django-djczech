@@ -14,7 +14,7 @@ from djczech.reconciliation.forms import ChequeDataForm
 from djczech.reconciliation.data.models import Cheque
 
 from djtools.decorators.auth import portal_auth_required
-from djzbar.utils.informix import do_sql as do_esql
+from djzbar.utils.informix import do_sql as do_esql, get_session
 
 from sqlalchemy import and_
 from sqlalchemy import exc
@@ -52,9 +52,7 @@ def cheque_data(request):
         form = ChequeDataForm(request.POST, request.FILES)
         if form.is_valid():
             # database connection
-            engine = create_engine(EARL)
-            Session = sessionmaker(bind=engine)
-            session = Session()
+            session = get_session(EARL)
             session.autoflush = False
             # convert date to datetime
             import_date = datetime.combine(
@@ -115,9 +113,8 @@ def cheque_data(request):
                     jbaccount=r["jbaccount"], jbamount=jbamount,
                     jbamountlnk=jbamount, jbpayee=jbpayee
                 )
-
+                # insert the data
                 try:
-                    # insert the data
                     session.add(cheque)
                     session.flush()
                     cheques.append(cheque.__dict__)
@@ -127,7 +124,6 @@ def cheque_data(request):
 
             # execute the reconciliation process
             data = recce_cheques(request, session, import_date)
-
             # commit the reconciliation updates
             session.commit()
 
@@ -143,12 +139,12 @@ def cheque_data(request):
             return rsvp
     else:
         form = ChequeDataForm()
-    return render_to_response(
-        "reconciliation/data_form.html", {
-            "form":form,"earl":EARL,"uid":uid
-        },
-        context_instance=RequestContext(request)
-    )
+        return render_to_response(
+            "reconciliation/data_form.html", {
+                "form":form,"earl":EARL,"uid":uid
+            },
+            context_instance=RequestContext(request)
+        )
 
 
 @portal_auth_required(
