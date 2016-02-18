@@ -176,8 +176,6 @@ SELECT_RECORDS_FOR_UPDATE = """
 """
 
 # update cheque status to 's'uspicious
-#suspicious = 's'
-suspicious = 'SU'
 UPDATE_STATUS_SUSPICIOUS = """
     UPDATE
         ccreconjb_rec
@@ -300,6 +298,7 @@ UPDATE_STATUS_AUTO_REC = """
         ccreconjb_rec.jbstatus = '{}'
 """.format(settings.AUTO_REC, STATUS)
 
+# Display reconciled checks
 SELECT_RECONCILIATED = """
     SELECT
         *
@@ -309,6 +308,7 @@ SELECT_RECONCILIATED = """
         tmp_reconupdta.cknodoc_no
 """
 
+# Display any left over imported checks whose status has not changed
 SELECT_REMAINING_EYE = """
     SELECT * FROM ccreconjb_rec where jbstatus = '{}'
 """.format(STATUS)
