@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-import os, sys
+import os
+import sys
+import argparse
 
 # env
 sys.path.append('/usr/lib/python2.7/dist-packages/')
 sys.path.append('/usr/lib/python2.7/')
 sys.path.append('/usr/local/lib/python2.7/dist-packages/')
-sys.path.append('/data2/django_1.7/')
+sys.path.append('/data2/django_1.8/')
 sys.path.append('/data2/django_projects/')
 sys.path.append('/data2/django_third/')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djczech.settings")
@@ -19,7 +21,8 @@ from djtools.fields import TODAY
 from datetime import date, datetime
 from itertools import islice
 
-import argparse
+from sqlalchemy import exc
+
 
 """
 Shell script that munges CSV data
@@ -84,7 +87,7 @@ def main():
         f = islice(open(phile, "r"), n, None)
 
         # read the CSV file
-        reader = csv.DictReader(f, fieldnames, delimiter='\t')
+        reader = csv.DictReader(f, fieldnames, delimiter=',')
 
     # create database session
     if test:
@@ -92,14 +95,15 @@ def main():
         print settings.IMPORT_STATUS
 
     session = get_session(EARL)
-
-    x = 1
+    session.autoflush = False
+    x = 0
     for r in reader:
         # convert amount from string to float and strip dollar sign
         try:
             jbamount = float(r["jbamount"][1:].replace(',',''))
         except:
             jbamount = 0
+
         # status date
         try:
             jbstatus_date = datetime.strptime(
@@ -107,6 +111,7 @@ def main():
             )
         except:
             jbstatus_date = None
+
         # check number
         try:
             cheque_number = int(r["jbchkno"])
@@ -127,19 +132,22 @@ def main():
         if test:
             print "{}) {}".format(x, cheque.__dict__)
         else:
+            # insert the data
             try:
-                # insert the data
                 session.add(cheque)
+                session.flush()
             except exc.SQLAlchemyError as e:
                 print e
                 print "Bad data: {}".format(cheque.__dict__)
-                pass
+                session.rollback()
         x += 1
 
     if not test:
         session.commit()
 
     # fin
+
+    print "Checks processed: {}".format(x)
     session.close()
 
 
