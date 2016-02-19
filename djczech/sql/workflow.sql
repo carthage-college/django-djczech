@@ -394,9 +394,32 @@ ORDER BY
     tmp_reconupdta.cknodoc_no;
 
 /* Display any left over imported checks whose status has not changed */
-SELECT_REMAINING_EYE = """
-    SELECT * FROM ccreconjb_rec where jbstatus = '{}'
-"""
+SELECT * FROM ccreconjb_rec where jbstatus = '{}'
+
+/* This selects the non-reconciled import records finding
+   the CX original transaction
+*/
+SELECT ccreconjb_rec.jbimprt_date, ccreconjb_rec.jbchkno,
+ccreconjb_rec.jbstatus,
+ccreconjb_rec.jbamount, ccreconjb_rec.jbstatus_date,
+gle_rec.doc_no cknodoc_no, gle_rec.doc_id cknodoc_id,
+gle_rec.jrnl_ref,
+gle_rec.jrnl_no, vch_rec.jrnl_date, gltr_rec.amt,
+gle_rec.ctgry, gltr_rec.stat, gltr_rec.recon_stat
+FROM ccreconjb_rec
+LEFT JOIN gle_rec ON (ccreconjb_rec.jbchkno = gle_rec.doc_no
+AND gle_rec.jrnl_ref = 'CK')
+LEFT JOIN vch_rec ON (gle_rec.jrnl_ref = vch_rec.vch_ref
+AND gle_rec.jrnl_no = vch_rec.jrnl_no
+AND gle_rec.ctgry in('CHK','VOID')
+AND vch_rec.amt_type = 'ACT')
+LEFT JOIN gltr_rec ON (gle_rec.jrnl_ref = gltr_rec.jrnl_ref
+AND gle_rec.jrnl_no = gltr_rec.jrnl_no
+AND gle_rec.gle_no = gltr_rec.ent_no
+AND gltr_rec.stat IN('P','xV'))
+WHERE DATE(ccreconjb_rec.jbimprt_date) >= DATE('15-6-1')
+AND ccreconjb_rec.jbstatus IN("s","I","i")
+ORDER BY gle_rec.doc_no;
 
 /* TEST */
 SELECT * FROM gltr_rec WHERE recon_stat = 'O';

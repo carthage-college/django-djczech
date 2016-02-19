@@ -147,6 +147,14 @@
                         {% include "data.inc.html" %}
                     {% endwith %}
                 {% endif %}
+                {% if data.select_non_requi_find_orig %}
+                    <h2 title="SELECT_NON_RECONCILDED">
+                        Original transactions from the non-reconciled cheques
+                    </h2>
+                    {% with objs=data.select_non_requi_find_orig %}
+                        {% include "reconciliation/non_requi_original_trans.html" %}
+                    {% endwith %}
+                {% endif %}
             {% endif %}
         </div>
         <!-- /.column2 -->

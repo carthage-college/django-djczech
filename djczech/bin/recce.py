@@ -132,8 +132,6 @@ def main():
     else:
         print sql
 
-    print "Find the duplicate check numbers and update as 's'uspicious"
-
     #...........................................
     print "TEST sql:"
     sql = "SELECT * FROM gltr_rec WHERE recon_stat = '{}'".format(
@@ -144,6 +142,8 @@ def main():
         objs = session.execute(sql).fetchall()
         for o in objs:
             print o
+
+    print "Find the duplicate check numbers and update as 's'uspicious"
 
     #...........................................
     print "first, drop the temp tables, just in case. sql:"
@@ -348,7 +348,6 @@ def main():
         for o in objs:
             print o
 
-    #...........................................
     print "select the reconciled checks. print here / send_mail() in view"
     print "SELECT_RECONCILIATED sql:"
     sql = SELECT_RECONCILIATED
@@ -358,7 +357,34 @@ def main():
         for o in objs:
             print o
 
-    session.commit()
+    #...........................................
+    print "Display any left over imported checks whose status has not changed"
+    print "SELECT_REMAINING_EYE sql:"
+    sql = SELECT_REMAINING_EYE
+    print sql
+    if not test:
+        objs = session.execute(sql).fetchall()
+        for o in objs:
+            print o
+
+    #...........................................
+    print "This selects the non-reconciled import records and finds"
+    print "the CX original transaction"
+    print "SELECT_NON_RECONCILDED sql:"
+    sql = SELECT_NON_RECONCILDED(
+        import_date=import_date,
+        suspicious=settings.SUSPICIOUS,
+        status=settings.IMPORT_STATUS
+    )
+
+    print sql
+    if not test:
+        objs = session.execute(sql).fetchall()
+        for o in objs:
+            print o
+
+
+    #session.commit()
     session.close()
 
     # end time
