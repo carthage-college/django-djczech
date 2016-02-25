@@ -120,6 +120,15 @@ $(function() {
         serverSide: true,
         filter: false,
         dom: '<"top"iflp<"clear">>rt<"bottom"iflp<"clear">>',
+        "oTableTools": {
+            "sSwfPath": "//www.carthage.edu/static/vendor/dashboard/js/plugins/dataTables/extensions/TableTools/swf/copy_csv_xls_pdf.swf",
+            "aButtons": [
+                "print", "xls", {
+                    "sExtends": "pdf",
+                    "sPdfOrientation": "landscape"
+                },
+            ],
+        },
         processing: true,
         ajax: {
             type: "{{request.method}}",
