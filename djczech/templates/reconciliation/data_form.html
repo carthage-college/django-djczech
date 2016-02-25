@@ -37,11 +37,11 @@
             spinner.stop(target);
             /*  Initialise the DataTables: */
             var table = $('.cheques-data').dataTable({
-                "sDom": 'T<"clear">lfrtip',
+                "sDom": 'T<"clear"><"top"iflp<"clear">>rt<"bottom"iflp<"clear">>',
                 "oTableTools": {
                     "sSwfPath": "//www.carthage.edu/static/vendor/dashboard/js/plugins/dataTables/extensions/TableTools/swf/copy_csv_xls_pdf.swf",
                     "aButtons": [
-                        "print", "xls", {
+                        "xls", {
                             "sExtends": "pdf",
                             "sPdfOrientation": "landscape"
                         },

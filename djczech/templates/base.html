@@ -120,18 +120,18 @@ $(function() {
     spinner.stop(target);
 
     var table = $('.cheques-data').dataTable({
-        serverSide: true,
-        filter: false,
-        dom: '<"top"iflp<"clear">>rt<"bottom"iflp<"clear">>',
+        "sDom": 'T<"clear"><"top"iflp<"clear">>rt<"bottom"iflp<"clear">>',
         "oTableTools": {
             "sSwfPath": "//www.carthage.edu/static/vendor/dashboard/js/plugins/dataTables/extensions/TableTools/swf/copy_csv_xls_pdf.swf",
             "aButtons": [
-                "print", "xls", {
+                "xls", {
                     "sExtends": "pdf",
                     "sPdfOrientation": "landscape"
                 },
             ],
         },
+        serverSide: true,
+        filter: false,
         processing: true,
         ajax: {
             type: "{{request.method}}",
