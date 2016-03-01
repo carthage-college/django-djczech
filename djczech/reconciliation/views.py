@@ -8,7 +8,7 @@ from djczech.reconciliation.data.models import Cheque
 from djczech.reconciliation.forms import ChequeDataForm
 from djczech.reconciliation.utils import handle_uploaded_file, recce_cheques
 
-from djtools.decorators.auth import portal_auth_required
+from djzbar.decorators.auth import portal_auth_required
 
 from sqlalchemy import exc
 from sqlalchemy import create_engine
@@ -116,7 +116,7 @@ def cheque_data(request):
             data = recce_cheques(request, session, import_date)
 
             # commit the reconciliation updates
-            #session.commit()
+            session.commit()
 
             rsvp = render_to_response(
                 "reconciliation/data_form.html", {
