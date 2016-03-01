@@ -15,7 +15,7 @@ handler500 = 'djtools.views.errors.server_error'
 urlpatterns = patterns('',
     # auth
     url(
-        r'^accounts/login',auth_views.login,
+        r'^accounts/login/',auth_views.login,
         {'template_name': 'accounts/login.html'},
         name='auth_login'
     ),
