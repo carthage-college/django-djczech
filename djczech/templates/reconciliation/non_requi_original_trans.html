@@ -1,0 +1,63 @@
+<div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover cheques-data">
+        <thead>
+            <tr>
+                <th title="ccreconjb_rec.jbchkno">Check #</th>
+                <th title="ccreconjb_rec.jbimprt_date">Import date</th>
+                <th title="ccreconjb_rec.jbstatus">Status</th>
+                <th title="ccreconjb_rec.jbamount">Amount</th>
+                <th title="ccreconjb_rec.jbstatus_date">Status date</th>
+                <th title="gle_rec.doc_no AS cknodoc_no">Check # doc #</th>
+                <th title="gle_rec.doc_id AS cknodoc_id">Check # doc ID</th>
+                <th title="gle_rec.jrnl_ref">Journal ref</th>
+                <th title="gle_rec.jrnl_no">Journal #</th>
+                <th title="vch_rec.jrnl_date">Journal date</th>
+                <th title="gltr_rec.amt">Amount</th>
+                <th title="gltr_rec.ctgry">Category</th>
+                <th title="gltr_rec.stat">Status</th>
+                <th title="gltr_rec.recon_stat">Recon status</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for o in objs %}
+            <tr>
+            <td>
+                <a href="{% url 'cheque_detail' o.jbchkno %}">{{o.jbchkno}}</a>
+            </td>
+            <td>{{o.jbimprt_date|date:"Y-m-d"}}</td>
+            <td>{{o.jbstatus}}</td>
+            <td>{{o.jbamount}}</td>
+            <td>{{o.jbstatus_date|date:"Y-m-d"}}</td>
+            <td>{{o.cknodoc_no}}</td>
+            <td>{{o.cknodoc_id}}</td>
+            <td>{{o.jrnl_ref}}</td>
+            <td>{{o.jrnl_no}}</td>
+            <td>{{o.jrnl_date|date:"Y-m-d"}}</td>
+            <td>{{o.amt}}</td>
+            <td>{{o.ctgry}}</td>
+            <td>{{o.stat}}</td>
+            <td>{{o.recon_stat}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th title="ccreconjb_rec.jbchkno">Check #</th>
+                <th title="ccreconjb_rec.jbimprt_date">Import date</th>
+                <th title="ccreconjb_rec.jbstatus">Status</th>
+                <th title="ccreconjb_rec.jbamount">Amount</th>
+                <th title="ccreconjb_rec.jbstatus_date">Status date</th>
+                <th title="gle_rec.doc_no AS cknodoc_no">Check # doc #</th>
+                <th title="gle_rec.doc_id AS cknodoc_id">Check # doc ID</th>
+                <th title="gle_rec.jrnl_ref">Journal ref</th>
+                <th title="gle_rec.jrnl_no">Journal #</th>
+                <th title="vch_rec.jrnl_date">Journal date</th>
+                <th title="gltr_rec.amt">Amount</th>
+                <th title="gltr_rec.ctgry">Category</th>
+                <th title="gltr_rec.stat">Status</th>
+                <th title="gltr_rec.recon_stat">Recon status</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<!-- /.table-responsive -->
