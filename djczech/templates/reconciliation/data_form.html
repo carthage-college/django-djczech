@@ -37,11 +37,11 @@
             spinner.stop(target);
             /*  Initialise the DataTables: */
             var table = $('.cheques-data').dataTable({
-                "sDom": 'T<"clear">lfrtip',
+                "sDom": 'T<"clear"><"top"iflp<"clear">>rt<"bottom"iflp<"clear">>',
                 "oTableTools": {
                     "sSwfPath": "//www.carthage.edu/static/vendor/dashboard/js/plugins/dataTables/extensions/TableTools/swf/copy_csv_xls_pdf.swf",
                     "aButtons": [
-                        "print", "xls", {
+                        "xls", {
                             "sExtends": "pdf",
                             "sPdfOrientation": "landscape"
                         },
@@ -61,10 +61,11 @@
                 buttonImage:"//www.carthage.edu/themes/shared/img/ico/calendar.gif",
                 buttonImageOnly:true
             });
-            $("#id_submit").click(function () {
+            $("#profile").submit(function () {
                 // disable submit button after user clicks it
-                $(this).attr('disabled', 'disabled');
+                $("#id_submit").attr('disabled', 'disabled');
                 spinner.spin(target);
+                return true;
             });
         });
     </script>
@@ -74,10 +75,6 @@
     <div class="col-lg-12">
         <h1 title="{{earl}}">
             Check Data Import
-            <small>
-                <span class="minor">Lavener rows are exceptions</span>
-                <!-- <i class="fa fa-star green"></i> = Star -->
-            </small>
         </h1>
     </div>
     <!-- /.col-lg-12 -->
@@ -86,7 +83,6 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="forms-container large-8 medium-10 small-12">
-            {% include "includes/required_text.html" %}
             {% include "includes/errors_text.html" %}
             <form method="post" action="{% url 'cheque_data' %}?uid={{uid}}"
                 enctype="multipart/form-data" class="form" id="profile">
@@ -149,6 +145,14 @@
                     </h2>
                     {% with objs=data.select_remaining_eye %}
                         {% include "data.inc.html" %}
+                    {% endwith %}
+                {% endif %}
+                {% if data.select_non_requi_find_orig %}
+                    <h2 title="SELECT_NON_RECONCILDED">
+                        Original transactions from the non-reconciled cheques
+                    </h2>
+                    {% with objs=data.select_non_requi_find_orig %}
+                        {% include "reconciliation/non_requi_original_trans.html" %}
                     {% endwith %}
                 {% endif %}
             {% endif %}

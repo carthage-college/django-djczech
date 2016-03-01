@@ -1,11 +1,3 @@
-from django.conf import settings
-
-"""
-Check reconciliation import workflow incantations
-"""
-
-STATUS=settings.IMPORT_STATUS
-
 # Populate temporary table A
 TMP_VOID_A = """
     SELECT
@@ -96,7 +88,7 @@ UPDATE_RECONCILIATION_STATUS = """
     UPDATE
         gltr_rec
     SET
-        gltr_rec.recon_stat = '{}'
+        gltr_rec.recon_stat = 'v'
     WHERE
         gltr_rec.gltr_no
     IN  (
@@ -107,7 +99,7 @@ UPDATE_RECONCILIATION_STATUS = """
         )
     AND
         gltr_rec.recon_stat = 'O'
-""".format(settings.REQUI_VICH)
+"""
 
 # Find the duplicate cheque numbers and update those as 's'uspicious
 
@@ -122,7 +114,7 @@ SELECT_CURRENT_BATCH_DATE = """
     INTO TEMP
         tmp_maxbtchdate
     WITH NO LOG
-""".format
+"""
 
 # select the duplicate cheques
 SELECT_DUPLICATES_1 = """
@@ -142,7 +134,7 @@ SELECT_DUPLICATES_1 = """
     INTO TEMP
         tmp_dupcknos
     WITH NO LOG
-""".format
+"""
 
 # select cheques for updating
 SELECT_FOR_UPDATING = """
@@ -161,13 +153,13 @@ SELECT_FOR_UPDATING = """
     AND
         ccreconjb_rec.jbchkno = tmp_dupcknos.jbchkno
     AND
-        ccreconjb_rec.jbstatus = '{status}'
+        ccreconjb_rec.jbstatus = 'I'
     ORDER BY
         ccreconjb_rec.jbchkno, ccreconjb_rec.jbseqno
     INTO TEMP
         tmp_4updtstatus
     WITH NO LOG
-""".format
+"""
 
 # select the records to be updated and send to the business office
 SELECT_RECORDS_FOR_UPDATE = """
@@ -184,7 +176,7 @@ UPDATE_STATUS_SUSPICIOUS = """
     UPDATE
         ccreconjb_rec
     SET
-        ccreconjb_rec.jbstatus = '{}'
+        ccreconjb_rec.jbstatus = 's'
     WHERE
         ccreconjb_rec.jbseqno
     IN  (
@@ -194,8 +186,8 @@ UPDATE_STATUS_SUSPICIOUS = """
                 tmp_4updtstatus
         )
     AND
-        ccreconjb_rec.jbstatus = '{}'
-""".format(settings.SUSPICIOUS, STATUS)
+        ccreconjb_rec.jbstatus = 'I'
+"""
 
 # send the results to the business office
 SELECT_DUPLICATES_2 = """
@@ -215,7 +207,7 @@ SELECT_DUPLICATES_2 = """
         ccreconjb_rec.jbchkno = tmp_dupcknos.jbchkno
     ORDER BY
         ccreconjb_rec.jbchkno, ccreconjb_rec.jbseqno
-""".format
+"""
 
 # Find the cleared CheckNos and update gltr_rec as 'r'econciled
 # and ccreconjb_rec as 'ar' (auto-reconciled)
@@ -256,9 +248,9 @@ SELECT_CLEARED_CHEQUES = """
     AND
         ccreconjb_rec.jbamountlnk = gltr_rec.amt
     AND
-        ccreconjb_rec.jbstatus NOT IN("{suspicious}","s","{auto_rec}","ar","er","mr")
+        ccreconjb_rec.jbstatus NOT IN("s","ar","er","mr")
     AND
-        gltr_rec.recon_stat NOT IN("{requi_rich}","{requi_vich}","r","v")
+        gltr_rec.recon_stat NOT IN("r","v")
     AND
         ccreconjb_rec.jbimprt_date >= '{import_date}'
     ORDER BY
@@ -266,13 +258,13 @@ SELECT_CLEARED_CHEQUES = """
     INTO TEMP
         tmp_reconupdta
     WITH NO LOG
-""".format
+"""
 
 UPDATE_RECONCILED = """
     UPDATE
         gltr_rec
     SET
-        gltr_rec.recon_stat = '{}'
+        gltr_rec.recon_stat = 'r'
     WHERE
         gltr_rec.gltr_no
     IN  (
@@ -283,13 +275,13 @@ UPDATE_RECONCILED = """
         )
     AND
         gltr_rec.recon_stat = 'O'
-""".format(settings.REQUI_RICH)
+"""
 
 UPDATE_STATUS_AUTO_REC = """
     UPDATE
         ccreconjb_rec
     SET
-        ccreconjb_rec.jbstatus = '{}'
+        ccreconjb_rec.jbstatus = 'ar'
     WHERE
         ccreconjb_rec.jbseqno
     IN  (
@@ -299,8 +291,8 @@ UPDATE_STATUS_AUTO_REC = """
                 tmp_reconupdta
         )
     AND
-        ccreconjb_rec.jbstatus = '{}'
-""".format(settings.AUTO_REC, STATUS)
+        ccreconjb_rec.jbstatus = 'I'
+"""
 
 # Display reconciled checks
 SELECT_RECONCILIATED = """
@@ -314,105 +306,5 @@ SELECT_RECONCILIATED = """
 
 # Display any left over imported checks whose status has not changed
 SELECT_REMAINING_EYE = """
-    SELECT * FROM ccreconjb_rec where jbstatus = '{}'
-""".format(STATUS)
-
-# This selects the non-reconciled import records and finds
-# the CX original transaction
-
-SELECT_NON_RECONCILDED = """
-SELECT
-    ccreconjb_rec.jbimprt_date, ccreconjb_rec.jbchkno,
-    ccreconjb_rec.jbstatus, ccreconjb_rec.jbamount,
-    ccreconjb_rec.jbstatus_date, gle_rec.doc_no AS cknodoc_no,
-    gle_rec.doc_id AS cknodoc_id, gle_rec.jrnl_ref, gle_rec.jrnl_no,
-    vch_rec.jrnl_date, gltr_rec.amt, gle_rec.ctgry, gltr_rec.stat,
-    gltr_rec.recon_stat
-FROM
-    ccreconjb_rec
-LEFT JOIN
-    gle_rec ON (ccreconjb_rec.jbchkno = gle_rec.doc_no
-AND
-    gle_rec.jrnl_ref = 'CK')
-LEFT JOIN
-    vch_rec ON (gle_rec.jrnl_ref = vch_rec.vch_ref
-AND
-    gle_rec.jrnl_no = vch_rec.jrnl_no
-AND
-    gle_rec.ctgry in('CHK','VOID')
-AND
-    vch_rec.amt_type = 'ACT')
-LEFT JOIN
-    gltr_rec ON (gle_rec.jrnl_ref = gltr_rec.jrnl_ref
-AND
-    gle_rec.jrnl_no = gltr_rec.jrnl_no
-AND
-    gle_rec.gle_no = gltr_rec.ent_no
-AND
-    gltr_rec.stat IN('P','xV'))
-WHERE
-    ccreconjb_rec.jbimprt_date >= '{import_date}'
-AND
-    ccreconjb_rec.jbstatus IN("{suspicious}","{status}","i")
-ORDER BY
-    gle_rec.doc_no
-""".format
-
-
+    SELECT * FROM ccreconjb_rec where jbstatus = 'I'
 """
-Check Matching SQL incantations
-"""
-
-MATCHING_CARTHAGE_CHEQUES = """
-    SELECT gle_rec.doc_no as check_number, gltr_rec.amt as amount,
-        trim(id_rec.fullname) as fullname,
-        TO_CHAR(vch_rec.pst_date,'%Y-%m-%d') as post_date
-    FROM
-        vch_rec, gle_rec, gltr_rec, id_rec
-    WHERE
-        vch_rec.vch_ref = gle_rec.jrnl_ref
-    AND vch_rec.jrnl_no = gle_rec.jrnl_no
-    AND vch_rec.vch_ref = "CK"
-    AND gle_rec.doc_id = id_rec.id
-    AND gle_rec.jrnl_ref = gltr_rec.jrnl_ref
-    AND gle_rec.jrnl_no = gltr_rec.jrnl_no
-    AND gle_rec.gle_no = gltr_rec.ent_no
-    AND (gltr_rec.recon_stat != "r" AND gltr_rec.recon_stat != "v")
-    AND gltr_rec.stat = "P"
-    ORDER BY
-        check_number DESC
-"""
-
-MATCHING_JOHNSON_CHEQUES = """
-   SELECT
-        jbchkno as check_number, jbamount as amount, jbaction,
-        jbstatus, TO_CHAR(jbstatus_date,'%Y-%m-%d') as cleared_date,
-        jbpayee, jbaccount, jbseqno
-   FROM
-        ccreconjb_rec
-   WHERE
-        (jbstatus = "I" OR jbstatus = "s")
-   AND
-        jbimprt_date > "{}"
-   ORDER BY check_number DESC
-""".format(settings.IMPORT_DATE_FIRST)
-
-MATCHING_UPDATE_GLTR_REC = """
-    UPDATE
-        gltr_rec
-    SET
-        recon_stat = "r"
-    WHERE gltr_no in (
-        SELECT gltr_rec.gltr_no
-        FROM vch_rec, gle_rec, gltr_rec
-        WHERE vch_rec.vch_ref = gle_rec.jrnl_ref
-          AND vch_rec.jrnl_no = gle_rec.jrnl_no
-          AND vch_rec.vch_ref = "CK"
-          AND gle_rec.jrnl_ref = gltr_rec.jrnl_ref
-          AND gle_rec.jrnl_no = gltr_rec.jrnl_no
-          AND gle_rec.gle_no = gltr_rec.ent_no
-          AND gltr_rec.stat = "P"
-          AND gle_rec.doc_no = {CarthageNumber}
-    )
-""".format
-

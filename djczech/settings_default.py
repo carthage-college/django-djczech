@@ -1,22 +1,42 @@
 """
 Django settings for project.
 """
-
+#from djzbar.settings import INFORMIX_EARL_PROD as INFORMIX_EARL
+from djzbar.settings import INFORMIX_EARL_TEST as INFORMIX_EARL
+INFORMIX_USERNAME = ''
+INFORMIX_PASSWORD = ''
+INFORMIX_HOST = ''
+INFORMIX_PORT = ''
+INFORMIX_DATABASE = ''
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
-
 # Debug
-#DEBUG = False
-DEBUG = True
+DEBUG = False
+#DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+INFORMIX_DEBUG = "debug"
+# status codes
+IMPORT_STATUS="I"
+SUSPICIOUS="s"
+AUTO_REC="ar"
+REQUI_RICH="r"
+REQUI_VICH="v"
+if DEBUG:
+    SUSPICIOUS="S"
+    AUTO_REC="AR"
+    REQUI_RICH="R"
+    REQUI_VICH="V"
+    IMPORT_STATUS="EYE"
+# date after which johnson bank cheques are included
+# in the check matching view
+IMPORT_DATE_FIRST="2015-05-01 00:00:00.0"
 ADMINS = (
     ('', ''),
 )
 MANAGERS = ADMINS
 
 SECRET_KEY = ''
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS =  ['localhost','127.0.0.1']
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'America/Chicago'
 SITE_ID = 1
@@ -25,7 +45,7 @@ USE_L10N = False
 USE_TZ = False
 DEFAULT_CHARSET = 'utf-8'
 FILE_CHARSET = 'utf-8'
-SERVER_URL = ""
+SERVER_URL = "www.example.com"
 API_URL = "%s/%s" % (SERVER_URL, "api")
 LIVEWHALE_API_URL = "https://%s" % (SERVER_URL)
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -33,7 +53,10 @@ ROOT_DIR = os.path.dirname(__file__)
 ROOT_URL = "/djczech/"
 ROOT_URLCONF = 'djczech.core.urls'
 WSGI_APPLICATION = 'djczech.wsgi.application'
-MEDIA_ROOT = ''
+MEDIA_ROOT = '{}/assets/'.format(ROOT_DIR)
+MEDIA_URL = '/static{}'.format(ROOT_URL)
+UPLOADS_DIR = "{}files/".format(MEDIA_ROOT)
+CHEQUE_DATA_DIR = "{}cheque-data/".format(UPLOADS_DIR)
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 STATIC_ROOT = ''
 STATIC_URL = "/static/"
@@ -43,23 +66,20 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
-
 DATABASES = {
     'default': {
         'HOST': '127.0.0.1',
-        'PORT': '3306',
-        'NAME': 'django_djczech',
+        'PORT': '',
+        'NAME': '',
         'ENGINE': 'django.db.backends.mysql',
         'USER': '',
         'PASSWORD': ''
     },
 }
-
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.formtools',
     'django.contrib.humanize',
     'django.contrib.messages',
     'django.contrib.sessions',
@@ -72,12 +92,10 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
 # template stuff
@@ -85,12 +103,7 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
 )
-TEMPLATE_DIRS = (
-    "/data2/django_templates/djdfir/",
-    "/data2/django_templates/djcher/",
-    "/data2/django_projects/djczech/templates/",
-    "/data2/django_templates/",
-)
+TEMPLATE_DIRS = ()
 TEMPLATE_CONTEXT_PROCESSORS = (
     "djtools.context_processors.sitevars",
     "django.contrib.auth.context_processors.auth",
@@ -99,28 +112,10 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.media",
 )
 # caching
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        #'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        #'LOCATION': '127.0.0.1:11211',
-        #'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        #'LOCATION': '/var/tmp/django_djczech_cache',
-        #'TIMEOUT': 60*20,
-        #'KEY_PREFIX': "djczech_",
-        #'OPTIONS': {
-        #    'MAX_ENTRIES': 80000,
-        #}
-    }
-}
-CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
 # LDAP Constants
-LDAP_SERVER = ''
-LDAP_SERVER_PWM = ''
-LDAP_PORT = ''
-LDAP_PORT_PWM = ''
+LDAP_SERVER = ""
+LDAP_PORT = ""
 LDAP_PROTOCOL = ""
-LDAP_PROTOCOL_PWM = ""
 LDAP_BASE = ""
 LDAP_USER = ""
 LDAP_PASS = ""
@@ -129,32 +124,27 @@ LDAP_OBJECT_CLASS = ""
 LDAP_OBJECT_CLASS_LIST = []
 LDAP_GROUPS = {}
 LDAP_RETURN = []
-LDAP_RETURN_PWM = []
-LDAP_ID_ATTR = ""
-LDAP_CHALLENGE_ATTR = ""
+LDAP_ID_ATTR=""
+LDAP_AUTH_USER_PK = False
 # auth backends
-AUTHENTICATION_BACKENDS = (
-    'djauth.ldapBackend.LDAPBackend',
-    'django.contrib.auth.backends.ModelBackend',
-)
-LOGIN_URL = '/djczech/accounts/login/'
-LOGIN_REDIRECT_URL = '/djczech/'
+AUTHENTICATION_BACKENDS = ()
+LOGIN_URL = '{}accounts/login/'.format(ROOT_URL)
+LOGIN_REDIRECT_URL = ROOT_URL
 USE_X_FORWARDED_HOST = True
-#SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_DOMAIN=".carthage.edu"
-SESSION_COOKIE_NAME ='django_djczech_cookie'
-SESSION_COOKIE_AGE = 86400
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_DOMAIN=""
+SESSION_COOKIE_NAME =''
+SESSION_COOKIE_AGE = 60*60
 # SMTP settings
 EMAIL_HOST = ''
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_FAIL_SILENTLY = False
+EMAIL_FAIL_SILENTLY = True
 DEFAULT_FROM_EMAIL = ''
 SERVER_EMAIL = ''
-SERVER_MAIL=''
+SERVER_MAIL=""
 # logging
 LOG_FILEPATH = os.path.join(os.path.dirname(__file__), "logs/")
 LOG_FILENAME = LOG_FILEPATH + "debug.log"
@@ -206,6 +196,11 @@ LOGGING = {
     },
     'loggers': {
         'djczech': {
+            'handlers':['logfile'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
+        'djczech.core': {
             'handlers':['logfile'],
             'propagate': True,
             'level':'DEBUG',

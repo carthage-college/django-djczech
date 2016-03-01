@@ -19,7 +19,10 @@ logger = logging.getLogger(__name__)
 
 EARL = settings.INFORMIX_EARL
 
-@portal_auth_required("BusinessOfficeFinance", reverse_lazy("access_denied"))
+@portal_auth_required(
+    "BusinessOfficeFinance",
+    "BusinessOfficeFinance", reverse_lazy("access_denied")
+)
 def cheque_detail(request, sid=None):
 
     # database connection
@@ -36,7 +39,10 @@ def cheque_detail(request, sid=None):
     )
 
 
-@portal_auth_required("BusinessOfficeFinance", reverse_lazy("access_denied"))
+@portal_auth_required(
+    "BusinessOfficeFinance",
+    "BusinessOfficeFinance", reverse_lazy("access_denied")
+)
 def cheque_ajax(request):
     # database connection
     engine = create_engine(EARL)
@@ -77,7 +83,10 @@ def cheque_ajax(request):
         check.pop("DT_RowData", None)
     return JsonResponse(jason, safe=False)
 
-@portal_auth_required("BusinessOfficeFinance", reverse_lazy("access_denied"))
+@portal_auth_required(
+    "BusinessOfficeFinance",
+    "BusinessOfficeFinance", reverse_lazy("access_denied")
+)
 def cheque_list(request):
     return render_to_response(
         "list.html", {
