@@ -5,19 +5,15 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 
 from djczech.reconciliation.data.models import Cheque
-
-from djtools.decorators.auth import portal_auth_required
+from djzbar.decorators.auth import portal_auth_required
 
 from sqlalchemy import desc
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datatables import DataTable
-from itertools import islice
 
 import os
 import csv
-
-
 import logging
 logger = logging.getLogger(__name__)
 
