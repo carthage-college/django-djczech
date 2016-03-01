@@ -2,8 +2,6 @@ from django.contrib import admin
 from django.conf.urls import patterns, url
 from django.views.generic import TemplateView
 
-from djtools.decorators.auth import group_required, portal_auth_required
-
 #django discovery
 admin.autodiscover()
 

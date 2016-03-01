@@ -13,7 +13,7 @@ from djczech.reconciliation.sql import MATCHING_UPDATE_GLTR_REC
 from djczech.reconciliation.forms import ChequeDataForm
 from djczech.reconciliation.data.models import Cheque
 
-from djtools.decorators.auth import portal_auth_required
+from djzbar.decorators.auth import portal_auth_required
 from djzbar.utils.informix import do_sql as do_esql, get_session
 
 from sqlalchemy import and_
