@@ -7,7 +7,7 @@ $(function() {
     var j = {};
 
     // ajax post URL
-    var earl = "https://www.carthage.edu/staging/djczech/reconciliation/matching/ajax/";
+    var earl = "https://www.carthage.edu/djczech/reconciliation/matching/ajax/";
 
     /* spinner */
     var opts = {
