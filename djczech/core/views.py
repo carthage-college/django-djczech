@@ -71,17 +71,22 @@ def cheque_ajax(request):
         "jbpayee"
     ])
 
-    table.add_data(link=lambda o: reverse_lazy("cheque_detail", args=[o.jbchkno]))
-    table.add_data(pk=lambda o: o.jbchkno)
-    #table.searchable(lambda queryset, user_input: cheque_search(queryset, user_input))
-    session.close()
-    jason = table.json()
-    #logger.debug("table.json() = {}".format(jason))
-    # DT_RowData dictionary contains a key named "link", which is
-    # a proxy object and JsonResponse() barfs on it, so we remove it
-    for check in jason.get("data"):
-        check.pop("DT_RowData", None)
-    return JsonResponse(jason, safe=False)
+    if not recci:
+        return JsonResponse(
+            {'message':'Missing GET/POST data for "status" field'}, safe=False
+        )
+    else:
+        table.add_data(link=lambda o: reverse_lazy("cheque_detail", args=[o.jbchkno]))
+        table.add_data(pk=lambda o: o.jbchkno)
+        #table.searchable(lambda queryset, user_input: cheque_search(queryset, user_input))
+        session.close()
+        jason = table.json()
+        #logger.debug("table.json() = {}".format(jason))
+        # DT_RowData dictionary contains a key named "link", which is
+        # a proxy object and JsonResponse() barfs on it, so we remove it
+        for check in jason.get("data"):
+            check.pop("DT_RowData", None)
+        return JsonResponse(jason, safe=False)
 
 @portal_auth_required(
     "BusinessOfficeFinance",
