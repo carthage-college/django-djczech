@@ -29,9 +29,6 @@ import csv
 
 EARL = settings.INFORMIX_EARL
 
-import logging
-logger = logging.getLogger(__name__)
-
 
 @portal_auth_required(
     "BusinessOfficeFinance",
@@ -177,34 +174,30 @@ def cheque_matching(request):
 )
 def cheque_matching_ajax(request):
 
-    sql=None
+    sql = None
+    status = 0
     if request.method == "POST":
-    #if request.method == "GET":
         # database connection
         engine = create_engine(EARL)
         Session = sessionmaker(bind=engine)
         session = Session()
         session.autoflush = False
-
         try:
             # johnson
-            jbseqno = int(request.GET.get("JohnsonSequence"))
-            jbamount = float(
-                request.GET.get("JohnsonAmount").replace(',','')[1:]
-            )
-            jbchkno = int(request.GET.get("JohnsonNumber"))
+            jbseqno = request.POST["JohnsonSequence"]
+            johnson_amount = request.POST["JohnsonAmount"].strip().replace(',','')[1:]
+            jbamount = float(johnson_amount)
+            jbchkno = int(request.POST["JohnsonNumber"].strip())
             # carthage
-            jbchknolnk = doc_no = int(request.GET.get("CarthageNumber"))
-            jbamountlnk = float(
-                request.GET.get("CarthageAmount").replace(',','')[1:]
-            )
+            jbchknolnk = doc_no = int(request.POST["CarthageNumber"])
+            carthage_amount = request.POST["CarthageAmount"].strip().replace(',','')[1:]
+            jbamountlnk = float(carthage_amount)
             # fetch the cheque
             cheque = session.query(Cheque).filter(and_(
                 Cheque.jbseqno==jbseqno,
                 Cheque.jbamount==jbamount,
                 Cheque.jbchkno==jbchkno
             ))
-            logger.debug("cheque sql: {}".format(str(cheque.statement)))
 
             if cheque:
                 cheque = cheque.one()
@@ -212,10 +205,8 @@ def cheque_matching_ajax(request):
                 cheque.jbstatus = "mr"
                 cheque.jbamountlnk = jbamountlnk
                 cheque.jbchknolnk = jbchknolnk
-                cheque.save()
                 # update gltr_rec
                 sql = MATCHING_UPDATE_GLTR_REC(CarthageNumber=doc_no)
-                logger.debug("update gltr_rec sql: {}".format(sql))
                 session.execute(sql)
                 session.flush()
                 session.commit()
@@ -223,14 +214,6 @@ def cheque_matching_ajax(request):
             cheque = None
 
         session.close()
-        return HttpResponse("1", content_type="text/plain; charset=utf-8")
-    else:
-        return HttpResponse("0", content_type="text/plain; charset=utf-8")
+        status = "1"
 
-    '''
-    return render_to_response(
-        "search.html",
-        {"cheque":cheque,"sql":sql,"earl":EARL},
-        context_instance=RequestContext(request)
-    )
-    '''
+    return HttpResponse(status, content_type="text/plain; charset=utf-8")
