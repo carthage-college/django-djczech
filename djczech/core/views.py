@@ -13,7 +13,6 @@ from sqlalchemy.orm import sessionmaker
 from datatables import DataTable
 
 import os
-import csv
 import logging
 logger = logging.getLogger(__name__)
 
