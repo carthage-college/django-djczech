@@ -13,8 +13,6 @@ from sqlalchemy.orm import sessionmaker
 from datatables import DataTable
 
 import os
-import logging
-logger = logging.getLogger(__name__)
 
 EARL = settings.INFORMIX_EARL
 
@@ -80,7 +78,6 @@ def cheque_ajax(request):
         #table.searchable(lambda queryset, user_input: cheque_search(queryset, user_input))
         session.close()
         jason = table.json()
-        #logger.debug("table.json() = {}".format(jason))
         # DT_RowData dictionary contains a key named "link", which is
         # a proxy object and JsonResponse() barfs on it, so we remove it
         for check in jason.get("data"):
