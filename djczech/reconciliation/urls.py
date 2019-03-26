@@ -1,11 +1,12 @@
 from django.contrib import admin
-from django.conf.urls import patterns, url
+from django.conf.urls import  url
 from django.views.generic import TemplateView
 
 #django discovery
 admin.autodiscover()
+from djczech.reconciliation import views
 
-urlpatterns = patterns('djczech.reconciliation.views',
+urlpatterns = [
     url(
         r'^data/success/$',
         TemplateView.as_view(
@@ -15,14 +16,14 @@ urlpatterns = patterns('djczech.reconciliation.views',
     ),
     url(
         r'^data/$',
-        'cheque_data', name="cheque_data"
+        views.cheque_data, name='cheque_data'
     ),
     url(
         r'^matching/$',
-        'cheque_matching', name='cheque_matching'
+        views.cheque_matching, name='cheque_matching'
     ),
     url(
         r'^matching/ajax/$',
-        'cheque_matching_ajax', name='cheque_matching_ajax'
+        views.cheque_matching_ajax, name='cheque_matching_ajax'
     ),
-)
+]

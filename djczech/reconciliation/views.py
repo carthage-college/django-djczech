@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.http import HttpResponse
 from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.core.urlresolvers import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
@@ -31,8 +31,8 @@ EARL = settings.INFORMIX_EARL
 
 
 @portal_auth_required(
-    "BusinessOfficeFinance",
-    "BusinessOfficeFinance", reverse_lazy("access_denied")
+    'BusinessOfficeFinance',
+    'BusinessOfficeFinance', reverse_lazy('access_denied')
 )
 def cheque_data(request):
     """
@@ -44,7 +44,7 @@ def cheque_data(request):
     data = None
     cheques = []
     fail = []
-    uid = request.GET.get("uid")
+    uid = request.GET.get('uid')
     if request.method=='POST':
         form = ChequeDataForm(request.POST, request.FILES)
         if form.is_valid():
@@ -57,18 +57,18 @@ def cheque_data(request):
             )
             # for some reason we set jbpayee equal to the import date
             # plus user info
-            jbpayee = "{}_{}".format(
-                form.cleaned_data['import_date'], "business_office"
+            jbpayee = '{}_{}'.format(
+                form.cleaned_data['import_date'], 'business_office'
             )
             # CSV headers
             fieldnames = (
-                "jbstatus_date", "jbstatus", "jbamount",
-                "jbaccount", "jbchkno", "jbpayee"
+                'jbstatus_date', 'jbstatus', 'jbamount',
+                'jbaccount', 'jbchkno', 'jbpayee'
             )
             # obtain the CSV file from POST and upload
             phile = handle_uploaded_file(request.FILES['bank_data'])
             # remove all lines up to and including the headers line
-            with open(phile, "r") as f:
+            with open(phile, 'r') as f:
                 n = 0
                 for line in f.readlines():
                     n += 1
@@ -76,7 +76,7 @@ def cheque_data(request):
                     if 'As of date' in line:
                         break
                 f.close()
-                f = islice(open(phile, "r"), n, None)
+                f = islice(open(phile, 'r'), n, None)
 
             # read the CSV file
             reader = csv.DictReader(f, fieldnames, delimiter=',')
@@ -85,19 +85,19 @@ def cheque_data(request):
             for r in reader:
                 # convert amount from string to float and strip dollar sign
                 try:
-                    jbamount = float(r["jbamount"][1:].replace(',',''))
+                    jbamount = float(r['jbamount'][1:].replace(',',''))
                 except:
                     jbamount = 0
                 # status date
                 try:
                     jbstatus_date = datetime.strptime(
-                        r["jbstatus_date"], "%m/%d/%Y"
+                        r['jbstatus_date'], '%m/%d/%Y'
                     )
                 except:
                     jbstatus_date = None
                 # check number
                 try:
-                    cheque_number = int(r["jbchkno"])
+                    cheque_number = int(r['jbchkno'])
                 except:
                     cheque_number = 0
 
@@ -106,8 +106,8 @@ def cheque_data(request):
                     jbimprt_date=import_date,
                     jbstatus_date=jbstatus_date,
                     jbchkno=cheque_number, jbchknolnk=cheque_number,
-                    jbstatus=settings.IMPORT_STATUS, jbaction="",
-                    jbaccount=r["jbaccount"], jbamount=jbamount,
+                    jbstatus=settings.IMPORT_STATUS, jbaction='',
+                    jbaccount=r['jbaccount'], jbamount=jbamount,
                     jbamountlnk=jbamount, jbpayee=jbpayee
                 )
                 # insert the data
@@ -124,29 +124,25 @@ def cheque_data(request):
             # commit the reconciliation updates
             session.commit()
 
-            rsvp = render_to_response(
-                "reconciliation/data_form.html", {
-                    "form":form, "earl":EARL, "fail":fail,
-                    "cheques":cheques, "data":data
-                },
-                context_instance=RequestContext(request)
+            rsvp = render(request, 'reconciliation/data_form.html', {
+                    'form':form, 'earl':EARL, 'fail':fail,
+                    'cheques':cheques, 'data':data
+                }
             )
             # done
             session.close()
             return rsvp
     else:
         form = ChequeDataForm()
-        return render_to_response(
-            "reconciliation/data_form.html", {
-                "form":form,"earl":EARL,"uid":uid
-            },
-            context_instance=RequestContext(request)
+        return render(request, 'reconciliation/data_form.html', {
+                'form':form,'earl':EARL,'uid':uid
+            }
         )
 
 
 @portal_auth_required(
-    "BusinessOfficeFinance",
-    "BusinessOfficeFinance", reverse_lazy("access_denied")
+    'BusinessOfficeFinance',
+    'BusinessOfficeFinance', reverse_lazy('access_denied')
 )
 def cheque_matching(request):
 
@@ -157,26 +153,24 @@ def cheque_matching(request):
         MATCHING_JOHNSON_CHEQUES,key=settings.INFORMIX_DEBUG,earl=EARL
     )
 
-    return render_to_response(
-        'reconciliation/matching.html', {
-            "cc_cheques":cc_cheques,
-            "jb_cheques":jb_cheques,
-            "earl":EARL
-        },
-        context_instance=RequestContext(request)
+    return render(request, 'reconciliation/matching.html', {
+            'cc_cheques':cc_cheques,
+            'jb_cheques':jb_cheques,
+            'earl':EARL
+        }
     )
 
 
 @csrf_exempt
 @portal_auth_required(
-    "BusinessOfficeFinance",
-    "BusinessOfficeFinance", reverse_lazy("access_denied")
+    'BusinessOfficeFinance',
+    'BusinessOfficeFinance', reverse_lazy('access_denied')
 )
 def cheque_matching_ajax(request):
 
     sql = None
     status = 0
-    if request.method == "POST":
+    if request.method == 'POST':
         # database connection
         engine = create_engine(EARL)
         Session = sessionmaker(bind=engine)
@@ -184,13 +178,13 @@ def cheque_matching_ajax(request):
         session.autoflush = False
         try:
             # johnson
-            jbseqno = request.POST["JohnsonSequence"]
-            johnson_amount = request.POST["JohnsonAmount"].strip().replace(',','')[1:]
+            jbseqno = request.POST['JohnsonSequence']
+            johnson_amount = request.POST['JohnsonAmount'].strip().replace(',','')[1:]
             jbamount = float(johnson_amount)
-            jbchkno = int(request.POST["JohnsonNumber"].strip())
+            jbchkno = int(request.POST['JohnsonNumber'].strip())
             # carthage
-            jbchknolnk = doc_no = int(request.POST["CarthageNumber"])
-            carthage_amount = request.POST["CarthageAmount"].strip().replace(',','')[1:]
+            jbchknolnk = doc_no = int(request.POST['CarthageNumber'])
+            carthage_amount = request.POST['CarthageAmount'].strip().replace(',','')[1:]
             jbamountlnk = float(carthage_amount)
             # fetch the cheque
             cheque = session.query(Cheque).filter(and_(
@@ -202,7 +196,7 @@ def cheque_matching_ajax(request):
             if cheque:
                 cheque = cheque.one()
                 # update the Cheque object and save
-                cheque.jbstatus = "mr"
+                cheque.jbstatus = 'mr'
                 cheque.jbamountlnk = jbamountlnk
                 cheque.jbchknolnk = jbchknolnk
                 # update gltr_rec
@@ -214,6 +208,6 @@ def cheque_matching_ajax(request):
             cheque = None
 
         session.close()
-        status = "1"
+        status = '1'
 
-    return HttpResponse(status, content_type="text/plain; charset=utf-8")
+    return HttpResponse(status, content_type='text/plain; charset=utf-8')
